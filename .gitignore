@@ -1,0 +1,6 @@
+.biotitetemp
+.vscode
+*ipynb_checkpoints*
+*.h5
+*.pkl
+*__pycache__*
