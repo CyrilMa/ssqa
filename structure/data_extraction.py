@@ -1,45 +1,46 @@
 import numpy as np
 import pandas as pd
 
-from .utils import sec_struct_codes, dssp_to_abc, AMINO_ACIDS, PROFILE_HEADER 
+from .utils import sec_struct_codes, dssp_to_abc, AMINO_ACIDS, PROFILE_HEADER
 
+import biotite
+import biotite.structure as struc
 
-##### SEQUENCE EXTRACTION
+import biotite.database.rcsb as rcsb
+import biotite.structure.io.mmtf as mmtf
 
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
+# SEQUENCE EXTRACTION
+
+
 def from_fasta_to_df(file):
-    proteins_df = pd.DataFrame(columns = ["aligned_seq", "seq"])
+    proteins_df = pd.DataFrame(columns=["aligned_seq", "seq"])
     with open(file, "r") as input_handle:
         for seq in SeqIO.parse(input_handle, "fasta"):
             sequence = str(seq.seq)
-            if "X" in sequence: 
+            if "X" in sequence:
                 continue
             proteins_df.loc[seq.id] = [sequence, sequence.replace(".", "")]
     return proteins_df
+
 
 def from_df_to_fasta(df, folder):
     records_aligned = []
     records_unaligned = []
     for ind, data in df.iterrows():
-        records_aligned.append(SeqRecord(Seq(data.aligned_seq), id = ind))
-        records_unaligned.append(SeqRecord(Seq(data.seq), id = ind))
+        records_aligned.append(SeqRecord(Seq(data.aligned_seq), id=ind))
+        records_unaligned.append(SeqRecord(Seq(data.seq), id=ind))
 
-    with open(f"{folder}/aligned.fasta", "w") as handle:        
+    with open(f"{folder}/aligned.fasta", "w") as handle:
         SeqIO.write(records_aligned, handle, "fasta")
-    with open(f"{folder}/unaligned.fasta", "w") as handle:        
+    with open(f"{folder}/unaligned.fasta", "w") as handle:
         SeqIO.write(records_unaligned, handle, "fasta")
 
-###### SECONDARY STRUCTURE EXRACTION
 
-import biotite
-import biotite.structure as struc
-import biotite.sequence as seq
-
-import biotite.database.rcsb as rcsb
-import biotite.structure.io.mmtf as mmtf
+# SECONDARY STRUCTURE EXRACTION
 
 def fetch_PDB(pdb, c, start, end):
     # Fetch and load structure
@@ -62,17 +63,19 @@ def fetch_PDB(pdb, c, start, end):
     sse = np.array([dssp_to_abc[e] for e in sse], dtype="U1")[start:end]
     return sse, tk_mono
 
-####### Parse HHM
+
+# Parse HHM
 
 def process_msa(seq, hhm_name):
     with open(hhm_name) as fp:
         res = parse_hhm(fp, seq=seq)
     return res
 
+
 def freq(freqstr):
     if freqstr == '*':
         return 0.
-    p = 2**(int(freqstr) / -1000)
+    p = 2 ** (int(freqstr) / -1000)
     assert 0 <= p <= 1.0
     return p
 
@@ -113,9 +116,8 @@ def parse_hhm(hhmfp, seq=None):
     profile = vectorize_profile(profile, seq, hh_seq)
 
     return {'profile': profile,
-        'neff': neff,
-        'header': header1 + header2,}
-
+            'neff': neff,
+            'header': header1 + header2, }
 
 
 def vectorize_profile(profile,

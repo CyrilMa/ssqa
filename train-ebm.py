@@ -16,27 +16,50 @@ from pgm.nn import ConvNet
 from pgm.metrics import hinge_loss, aa_acc, likelihood_loss
 from pgm.utils import I
 
-def train(epoch):
-    mean_loss, mean_reg, mean_acc = 0, 0, 0
-    for batch_idx, data in enumerate(train_loader):
-        x = data[0].float().permute(0, 2, 1).to(device)
-        s = data[1].float().permute(0, 2, 1).to(device)
-        length = data[2].int().to(device)
-        
-        # Optimization
-        optimizer.zero_grad()
-        loss = hinge_loss(model, x, s)
-        loss.backward()
-        optimizer.step()
-#         print(d_0["visible"].argmax(-1)[0], d_f["visible"].argmax(-1)[0])
-        acc = aa_acc(s, -model(x))
+def train():
+    start = time.time()
+    model.train()
+    in_lays, out_lays = ["visible"], ["hidden"]
+    edge = model.get_edge("visible", "hidden")
+    edge.gauge = edge.gauge.to(device)
+    ais = AIS(model, q)
 
-        del x; del s
-        # Metrics
-        mean_loss = (mean_loss*batch_idx + loss.item())/ (batch_idx+1)
-        mean_acc = (mean_acc*batch_idx + acc)/ (batch_idx+1)
-        m, s = int(time.time()-start)//60, int(time.time()-start)%60
-        print(f'''Train Epoch: {epoch} [{int(100*batch_idx/len(train_loader))}%] || Time: {m} min {s} || Loss: {mean_loss:.3f} || Acc: {mean_acc:.3f}''', end="\r")
+    for epoch in range(6000):
+            # Z estimation
+        if not epoch%100:
+            print(f'''Train Epoch: {epoch} [100%] || Time: {m} min {s} || Loss: {mean_loss-Z:.3f} || Reg: {mean_reg:.3f} || Acc: {mean_acc:.3f}''', end="\t")
+            ais.update(model)
+            Z = ais.run(50, 100)
+            print()
+
+        mean_loss, mean_reg, mean_acc = 0, 0, 0
+        for batch_idx, data in enumerate(train_loader):
+            x = data[0].float().permute(0, 2, 1).to(device)
+            w = data[1].float().to(device)
+            
+            # Sampling
+            d_0 = {"visible":x}
+            d_0, d_f = model.gibbs_sampling(d_0, in_lays, out_lays, k = 10)
+            
+            # Optimization
+            optimizer.zero_grad()
+            e_0, e_f = model(d_0), model(d_f)
+            reg = l1b_reg(edge)
+            loss = msa_mean(e_f-e_0, w) + gamma * reg
+            loss.backward()
+            optimizer.step()
+            
+            
+            # Metrics
+    #         d_0, d_f = model.gibbs_sampling(d_0, in_lays, out_lays, k = 1)
+            acc = aa_acc(d_0["visible"].view(*x.size()), d_f["visible"].view(*x.size()))
+            ll = msa_mean(model.integrate_likelihood(d_f, "hidden"),w)/31
+            mean_loss = (mean_loss*batch_idx + ll.item())/ (batch_idx+1)
+            mean_reg = (mean_reg*batch_idx + gamma*reg)/(batch_idx+1)
+            mean_acc = (mean_acc*batch_idx + acc)/(batch_idx+1)
+            m, s = int(time.time()-start)//60, int(time.time()-start)%60
+
+        print(f'''Train Epoch: {epoch} [100%] || Time: {m} min {s} || Loss: {mean_loss-Z:.3f} || Reg: {mean_reg:.3f} || Acc: {mean_acc:.3f}''', end="\r")
         
     
 def val(epoch):

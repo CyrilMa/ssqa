@@ -1,2 +1,3 @@
-I = (lambda x : x)
+I = (lambda x: x)
+
 device = "cpu"
