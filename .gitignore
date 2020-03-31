@@ -4,4 +4,4 @@
 *.h5
 *.pkl
 *__pycache__*
-*.idea
+.idea
