@@ -44,10 +44,10 @@ class DReLULayer(Layer):
         super(DReLULayer, self).__init__(name)
         self.full_name = f"dReLU_{name}"
         self.N, self.shape = N, N
-        self.params = [torch.tensor(1., requires_grad=False),
-                       torch.tensor(1., requires_grad=False),
-                       torch.tensor(0., requires_grad=False),
-                       torch.tensor(0., requires_grad=False)]
+        self.params = [torch.tensor(1., requires_grad=True),
+                       torch.tensor(1., requires_grad=True),
+                       torch.tensor(0., requires_grad=True),
+                       torch.tensor(0., requires_grad=True)]
 
     def sample(self, probas):
         gamma_plus, gamma_minus, theta_plus, theta_minus = self.params
@@ -142,9 +142,9 @@ class OneHotLayer(Layer):
     def annealed_sample(self, probas, beta, logp0):
         batch_size = probas[0].size(0)
         phi = sum([p.view(batch_size, self.q, self.N) for p in probas])
-        phi += ((1-beta)*self.linear.weights + beta*logp0).view(1, self.q, self.N)
+        phi += (beta*self.linear.weights + (1-beta)*logp0).view(1, self.q, self.N)
         distribution = OneHotCategorical(probs=F.softmax(phi, 1).permute(0, 2, 1))
-        return distribution.sample().permute(0, 2, 1)
+        return distribution.sample().permute(0, 2, 1).reshape(batch_size, -1)
 
     def forward(self, x):
         x = x.reshape(x.size(0), -1)
