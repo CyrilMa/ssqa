@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="0181bba7-5666-4018-9f1a-3336ee67b6fd" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/pgm/layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/layers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/torch_rbm.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/torch_rbm.ipynb" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1ZtmO7zu0RxHV4aSmXbkSjjxNIK" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="0181bba7-5666-4018-9f1a-3336ee67b6fd" name="Default Changelist" comment="" />
+      <created>1585666730906</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1585666730906</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="590" y="215" width="800" height="684" key="#Inspections" timestamp="1585667782024">
+      <screen x="70" y="27" width="1850" height="1053" />
+    </state>
+    <state x="590" y="215" width="800" height="684" key="#Inspections/70.27.1850.1053@70.27.1850.1053" timestamp="1585667782024" />
+    <state x="591" y="117" width="797" height="879" key="CommitChangelistDialog2" timestamp="1585672889927">
+      <screen x="70" y="27" width="1850" height="1053" />
+    </state>
+    <state x="591" y="117" width="797" height="879" key="CommitChangelistDialog2/70.27.1850.1053@70.27.1850.1053" timestamp="1585672889927" />
+    <state x="70" y="27" width="1850" height="1053" key="SettingsEditor" timestamp="1585668865258">
+      <screen x="70" y="27" width="1850" height="1053" />
+    </state>
+    <state x="70" y="27" width="1850" height="1053" key="SettingsEditor/70.27.1850.1053@70.27.1850.1053" timestamp="1585668865258" />
+    <state x="718" y="374" key="com.intellij.ide.util.TipDialog" timestamp="1585824745056">
+      <screen x="70" y="27" width="1850" height="1053" />
+    </state>
+    <state x="718" y="374" key="com.intellij.ide.util.TipDialog/70.27.1850.1053@70.27.1850.1053" timestamp="1585824745056" />
+    <state x="754" y="473" width="481" height="167" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1585672874785">
+      <screen x="70" y="27" width="1850" height="1053" />
+    </state>
+    <state x="754" y="473" width="481" height="167" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/70.27.1850.1053@70.27.1850.1053" timestamp="1585672874785" />
+  </component>
+</project>
