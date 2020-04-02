@@ -60,8 +60,7 @@ class Edge(nn.Module):
 
     def forward(self, x, sample=True):
         x = x.reshape(x.size(0), -1)
-        W = self.get_weights()
-        p = F.linear(x, W, self.linear.bias)
+        p = self.linear(x)
         if sample:
             h = self.out_layer.sample([p])
             return h

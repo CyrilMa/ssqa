@@ -77,6 +77,7 @@ def msa_mean(x, w):
 
 inf = float("Inf")
 r2 = math.sqrt(2)
+SAFE_BOUND = 1 - 1e-7
 
 
 def phi(x):
@@ -84,25 +85,28 @@ def phi(x):
 
 
 def phi_inv(x):
-    return r2 * (torch.erfinv(2 * x - 1))
-
-
-def TruncatedNormal(mu, sigma, a, b):
-    x = torch.rand_like(mu)
-    phi_a, phi_b = phi((a - mu) / sigma), phi((b - mu) / sigma)
-    return phi_inv(phi_a + x * (phi_b - phi_a)) * sigma + mu
+    return r2 * torch.erfinv((2 * x - 1).clamp(-SAFE_BOUND, SAFE_BOUND))
 
 
 def TNP(mu, sigma):
     x = torch.rand_like(mu)
     phi_a, phi_b = phi(-mu / sigma), torch.tensor(1.)
-    return (phi_inv(phi_a + x * (phi_b - phi_a)) * sigma + mu).clamp(0, 100)
+    a = (phi_a + x * (phi_b - phi_a))
+    return phi_inv(a) * sigma + mu
 
 
 def TNM(mu, sigma):
     x = torch.rand_like(mu)
     phi_a, phi_b = torch.tensor(0.), phi(-mu / sigma)
-    return (phi_inv(phi_a + x * (phi_b - phi_a)) * sigma + mu).clamp(-100, 0)
+    a = (phi_a + x * (phi_b - phi_a))
+    return phi_inv(a) * sigma + mu
+
+
+def TruncatedNormal(mu, sigma, a, b):
+    x = torch.rand_like(mu)
+    phi_a, phi_b = phi((a - mu) / sigma), phi((b - mu) / sigma)
+    a = (phi_a + x * (phi_b - phi_a))
+    return phi_inv(a) * sigma + mu
 
 
 # Gauges

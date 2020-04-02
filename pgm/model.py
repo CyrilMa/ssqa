@@ -57,7 +57,7 @@ class MRF(nn.Module):
         for name, x in d.items():
             if name == out_lay:
                 continue
-            Ix = self.get_edge(name, out_lay)(x)
+            Ix = self.get_edge(name, out_lay)(x, False)
             gammaIx = out.gamma(Ix)
             ll = gammaIx if ll is None else ll + gammaIx
             ll += self.layers[name](x).reshape(-1)
@@ -86,10 +86,10 @@ class MRF(nn.Module):
 
     def annealed_gibbs_sampling(self, x, in_, out_, beta, log_p0, k=10):
         for _ in range(k):
-            distribution = (1 - beta) * self._distribution(in_, out_, x)
-            h = out_.sample([distribution])
-            distribution = (1 - beta) * self._distribution(out_, in_, h)
-            x = in_.annealed_sample([distribution], log_p0)
+            distribution = beta * self._distribution(in_, out_, x)
+            h = self.layers[out_].sample([distribution])
+            distribution = beta * self._distribution(out_, in_, h)
+            x = self.layers[in_].annealed_sample([distribution], beta, log_p0)
         return x
 
     def _gibbs(self, d, out_lay):
@@ -100,7 +100,7 @@ class MRF(nn.Module):
                 continue
             distribution = self._distribution(name, out_lay, lay)
             if distribution is not None:
-                probas.append(distribution(name, out_lay, lay))
+                probas.append(distribution)
         return out_layer.sample(probas)
 
     def _distribution(self, i, o, x):

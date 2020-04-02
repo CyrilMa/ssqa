@@ -44,15 +44,17 @@ class DReLULayer(Layer):
         super(DReLULayer, self).__init__(name)
         self.full_name = f"dReLU_{name}"
         self.N, self.shape = N, N
-        self.params = [torch.tensor(1., requires_grad=False),
-                       torch.tensor(1., requires_grad=False),
-                       torch.tensor(0., requires_grad=False),
-                       torch.tensor(0., requires_grad=False)]
+        self.phi = None
+        self.params = nn.ParameterList([nn.Parameter(torch.tensor(1.), requires_grad=False),
+                                        nn.Parameter(torch.tensor(1.), requires_grad=False),
+                                        nn.Parameter(torch.tensor(0.), requires_grad=False),
+                                        nn.Parameter(torch.tensor(0.), requires_grad=False)])
 
     def sample(self, probas):
         gamma_plus, gamma_minus, theta_plus, theta_minus = self.params
         batch_size = probas[0].size(0)
         phi = sum([p.view(batch_size, self.N) for p in probas]).clamp(-5, 5)
+        self.phi = phi
         _, _, p_plus, p_minus = self._Z(phi)
         sample_plus = TNP((phi - theta_plus) / gamma_plus, 1 / gamma_plus)
         sample_minus = TNM((phi - theta_minus) / gamma_minus, 1 / gamma_minus)
@@ -72,15 +74,21 @@ class DReLULayer(Layer):
     def _Z(self, x):
         gamma_plus, gamma_minus, theta_plus, theta_minus = self.params
         r_gamma_plus, r_gamma_minus = math.sqrt(gamma_plus), math.sqrt(gamma_minus)
-        z_plus = DReLULayer._phi(-(x - theta_plus) / r_gamma_plus) / r_gamma_plus
-        z_minus = DReLULayer._phi((x - theta_minus) / r_gamma_minus) / r_gamma_minus
-        return z_plus, z_minus, z_plus / (z_plus + z_minus), z_minus / (z_plus + z_minus)
+        z_plus = (DReLULayer._phi(-(x - theta_plus) / r_gamma_plus) / r_gamma_plus).clamp(-1e4, 1e4)
+        z_minus = (DReLULayer._phi((x - theta_minus) / r_gamma_minus) / r_gamma_minus).clamp(-1e4, 1e4)
+        return z_plus, z_minus, DReLULayer.fillna(z_plus / (z_plus + z_minus)), DReLULayer.fillna(z_minus / (z_plus + z_minus))
 
     @staticmethod
     def _phi(x):
         r2 = math.sqrt(2)
         rpi2 = math.sqrt(math.pi / 2)
-        return torch.exp(x ** 2 / 2) * torch.erfc(x/r2) * rpi2
+        return torch.exp(x ** 2 / 2) * torch.erfc(x / r2) * rpi2
+
+    @staticmethod
+    def fillna(x, val=1):
+        idx = torch.where(x != x)[0]
+        x[idx] = val
+        return x
 
 
 class GaussianLayer(Layer):
@@ -125,7 +133,8 @@ class OneHotLayer(Layer):
         super(OneHotLayer, self).__init__(name)
         self.full_name = f"OneHot_{name}"
         self.N, self.q, self.shape = N, q, N * q
-        self.linear = nn.Linear(self.shape, 1)
+        self.linear = nn.Linear(self.shape, 1, bias=False)
+        self.phi = None
         if weights is not None:
             self.linear.weights = weights.view(1, -1)
 
@@ -136,15 +145,16 @@ class OneHotLayer(Layer):
         batch_size = probas[0].size(0)
         phi = sum([p.view(batch_size, self.q, self.N) for p in probas])
         phi += self.linear.weights.view(1, self.q, self.N)
+        self.phi = phi
         distribution = OneHotCategorical(probs=F.softmax(phi, 1).permute(0, 2, 1))
         return distribution.sample().permute(0, 2, 1)
 
     def annealed_sample(self, probas, beta, logp0):
         batch_size = probas[0].size(0)
         phi = sum([p.view(batch_size, self.q, self.N) for p in probas])
-        phi += ((1-beta)*self.linear.weights + beta*logp0).view(1, self.q, self.N)
+        phi += (beta * self.linear.weights + (1 - beta) * logp0).view(1, self.q, self.N)
         distribution = OneHotCategorical(probs=F.softmax(phi, 1).permute(0, 2, 1))
-        return distribution.sample().permute(0, 2, 1)
+        return distribution.sample().permute(0, 2, 1).reshape(batch_size, -1)
 
     def forward(self, x):
         x = x.reshape(x.size(0), -1)
