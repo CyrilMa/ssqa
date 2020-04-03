@@ -69,7 +69,7 @@ class DReLULayer(Layer):
 
     def gamma(self, iv):
         z_plus, z_minus, _, _ = self._Z(iv)
-        return torch.log(z_plus + z_minus).sum(-1)
+        return torch.log((z_plus + z_minus).clamp(1e-8, 2e4)).sum(-1)
 
     def _Z(self, x):
         gamma_plus, gamma_minus, theta_plus, theta_minus = self.params

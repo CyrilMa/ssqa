@@ -2,8 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0181bba7-5666-4018-9f1a-3336ee67b6fd" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pgm/train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_extraction.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/data_extraction.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/full_track.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/full_track.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pgm/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pgm/layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/layers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/torch_rbm.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/torch_rbm.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,7 +33,6 @@
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
@@ -58,13 +65,17 @@
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
     <state x="70" y="27" width="1850" height="1053" key="SettingsEditor/70.27.1850.1053@70.27.1850.1053" timestamp="1585668865258" />
-    <state x="718" y="374" key="com.intellij.ide.util.TipDialog" timestamp="1585824745056">
+    <state x="1017" y="151" key="com.intellij.ide.util.TipDialog" timestamp="1585909625975">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
-    <state x="718" y="374" key="com.intellij.ide.util.TipDialog/70.27.1850.1053@70.27.1850.1053" timestamp="1585824745056" />
+    <state x="1017" y="151" key="com.intellij.ide.util.TipDialog/70.27.1850.1053@70.27.1850.1053" timestamp="1585909625975" />
     <state x="754" y="473" width="481" height="167" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1585672874785">
       <screen x="70" y="27" width="1850" height="1053" />
     </state>
     <state x="754" y="473" width="481" height="167" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/70.27.1850.1053@70.27.1850.1053" timestamp="1585672874785" />
+    <state x="658" y="259" width="672" height="678" key="search.everywhere.popup" timestamp="1585927465232">
+      <screen x="70" y="27" width="1850" height="1053" />
+    </state>
+    <state x="658" y="259" width="672" height="678" key="search.everywhere.popup/70.27.1850.1053@70.27.1850.1053" timestamp="1585927465232" />
   </component>
 </project>
