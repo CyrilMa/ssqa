@@ -12,9 +12,9 @@ def train(model, optimizer, loader, visible_layers, hidden_layers, epoch, savepa
     model.train()
     mean_loss, mean_reg, mean_acc = 0, 0, 0
     for batch_idx, data in enumerate(loader):
-        d_0 = {k: v.float().permute(0, 2, 1).to(device) for k, v in zip(LAYERS_NAME, data[:-1]) if k in visible_layers}
+        d_0 = {k: v.float().permute(0, 2, 1).to(device) for k, v in zip(LAYERS_NAME, data[:-2]) if k in visible_layers}
         w = data[-1].float().to(device)
-        batch_size, q, N = d_0["sequence"]
+        batch_size, q, N = d_0["sequence"].size()
 
         # Sampling
         d_0, d_f = model.gibbs_sampling(d_0, visible_layers, hidden_layers, k=10)
@@ -38,7 +38,7 @@ def train(model, optimizer, loader, visible_layers, hidden_layers, epoch, savepa
     print(
         f'''Train Epoch: {epoch} [100%] || Time: {m} min {s} || Loss: {mean_loss:.3f} || Reg: {mean_reg:.3f} || Acc: {mean_acc:.3f}''',
         end="\r")
-    if not epoch % 100:
+    if not epoch % 30:
         print(
             f'''Train Epoch: {epoch} [100%] || Time: {m} min {s} || Loss: {mean_loss:.3f} || Reg: {mean_reg:.3f} || Acc: {mean_acc:.3f}''')
         model.save(f"{savepath}_{epoch}.h5")
@@ -51,7 +51,7 @@ def val(model, loader, visible_layers, hidden_layers, epoch):
     for batch_idx, data in enumerate(loader):
         d_0 = {k: v.float().permute(0, 2, 1).to(device) for k, v in zip(LAYERS_NAME, data[:-1]) if k in visible_layers}
         w = data[-1].float().to(device)
-        batch_size, q, N = d_0["sequence"]
+        batch_size, q, N = d_0["sequence"].size()
 
         # Sampling
         d_0, d_f = model.gibbs_sampling(d_0, visible_layers, hidden_layers, k=10)

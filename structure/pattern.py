@@ -9,9 +9,9 @@ inf = float("Inf")
 
 
 class PatternMatching(nn.Module):
-    def __init__(self, pattern, Q,
-                 T=None, pi=None,
-                 name="", MAX_SIZE=300):
+
+    def __init__(self, pattern, Q, T=None, pi=None, name=""):
+        super().__init__()
         self.pattern = [pat[0] for pat in pattern]
         self.name = f"Matcher {name}"
         self.Q = torch.tensor(Q)
@@ -35,9 +35,9 @@ class PatternMatching(nn.Module):
 
         def sum_alpha():
             LL = []
-            ll = -torch.ones(N + 1) * inf;
+            ll = -torch.ones(N + 1) * inf
             ll[0] = 0
-            LL.append(ll);
+            LL.append(ll)
             last_ll = ll.view(-1, 1)
             for c in self.pattern:
                 ll = torch.logsumexp(P[0, c] + Q[0, c] + last_ll, 0)
@@ -47,9 +47,9 @@ class PatternMatching(nn.Module):
 
         def sum_beta():
             LL = []
-            ll = -torch.ones(N + 1) * inf;
+            ll = -torch.ones(N + 1) * inf
             ll[-1] = 0
-            LL.append(ll);
+            LL.append(ll)
             last_ll = ll.view(1, -1)
             for c in self.pattern[::-1]:
                 ll = torch.logsumexp(P[0, c] + Q[0, c] + last_ll, 1)

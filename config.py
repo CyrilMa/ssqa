@@ -1,2 +1,2 @@
 DATASET = "PF00397"
-DATA = "/home/cyril/Documents/These/data"
+DATA = "/home/malbranke/data"
