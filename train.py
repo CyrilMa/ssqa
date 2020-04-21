@@ -7,18 +7,19 @@ from torch import optim
 from config import *
 
 from pgm.data import SequenceStructureData
-from pgm.layers import OneHotLayer, DReLULayer
+from pgm.layers import OneHotLayer, DReLULayer, GaussianLayer
 from pgm.model import MRF
 from pgm.train import train, val
 
 torch.cuda.is_available()
+torch.set_num_threads(8)
 device = torch.device('cpu')
 
 batch_size = 300
 q = 21
 N = 31
 k = 10
-lamb_l1b = 0.025
+lamb_l1b = 0.25
 gamma = lamb_l1b / (2 * q * N)
 
 train_dataset = SequenceStructureData(f"{DATA}/{DATASET}")
@@ -58,7 +59,7 @@ visible_layers = ["sequence"]
 hidden_layers = ["hidden"]
 
 v = OneHotLayer(pots, N=68, q=21, name="sequence")
-h = DReLULayer(N=200, name="hidden")
+h = GaussianLayer(N=200, name="hidden")
 
 E = [(v.name, h.name)]
 
@@ -72,9 +73,9 @@ for visible in visible_layers:
 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-for epoch in range(1, 6001):
-    train(model, optimizer, train_loader, visible_layers, hidden_layers, epoch,
-          savepath=f"{DATA}/{DATASET}/weights/seq-200")
+for epoch in range(1, 4001):
+    train(model, optimizer, train_loader, visible_layers, hidden_layers, [gamma], epoch,
+          savepath=f"{DATA}/{DATASET}/weights/seq-reg-200")
     if not epoch % 30:
         val(model, val_loader, visible_layers, hidden_layers, epoch)
 
@@ -85,7 +86,7 @@ hidden_layers = ["hidden"]
 
 v = OneHotLayer(pots, N=68, q=21, name="sequence")
 s = OneHotLayer(pots2, N=68, q=4, name="structure")
-h = DReLULayer(N=200, name="hidden")
+h = GaussianLayer(N=200, name="hidden")
 
 E = [(v.name, h.name),
      (s.name, h.name),
@@ -102,9 +103,9 @@ for visible in visible_layers:
 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-for epoch in range(1, 6001):
-    train(model, optimizer, train_loader, visible_layers, hidden_layers, epoch,
-          savepath=f"{DATA}/{DATASET}/weights/seq-struct-200")
+for epoch in range(1, 4001):
+    train(model, optimizer, train_loader, visible_layers, hidden_layers, [gamma, gamma/4], epoch,
+          savepath=f"{DATA}/{DATASET}/weights/seq-struct-reg-200")
     if not epoch % 30:
         val(model, val_loader, visible_layers, hidden_layers, epoch)
 
@@ -116,7 +117,7 @@ hidden_layers = ["hidden"]
 v = OneHotLayer(pots, N=68, q=21, name="sequence")
 s = OneHotLayer(pots2, N=68, q=4, name="structure")
 t = OneHotLayer(pots3, N=7, q=10, name="transitions")
-h = DReLULayer(N=200, name="hidden")
+h = GaussianLayer(N=200, name="hidden")
 
 E = [(v.name, h.name),
      (s.name, h.name),
@@ -135,8 +136,8 @@ for visible in visible_layers:
 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-for epoch in range(1, 6001):
-    train(model, optimizer, train_loader, visible_layers, hidden_layers, epoch,
-          savepath=f"{DATA}/{DATASET}/weights/seq-structure-transitions-200")
+for epoch in range(1, 4001):
+    train(model, optimizer, train_loader, visible_layers, hidden_layers, [gamma, gamma/4, gamma/4], epoch,
+          savepath=f"{DATA}/{DATASET}/weights/seq-structure-transitions-reg-200")
     if not epoch % 30:
         val(model, val_loader, visible_layers, hidden_layers, epoch)

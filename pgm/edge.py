@@ -34,7 +34,6 @@ class Edge(nn.Module):
         in_shape, out_shape = lay_in.shape, lay_out.shape
         self.linear = nn.Linear(in_shape, out_shape, False)
         self.reverse = nn.Linear(out_shape, in_shape, False)
-        self.bn1 = nn.BatchNorm1d(out_shape)
         if weights is not None:
             self.linear.weight = weights
         self.reverse.weight.data = self.linear.weight.data.t()

@@ -7,10 +7,11 @@ device = torch.device('cpu')
 LAYERS_NAME = ["sequence", "structure", "transitions"]
 
 
-def train(model, optimizer, loader, visible_layers, hidden_layers, epoch, savepath="seq100"):
+def train(model, optimizer, loader, visible_layers, hidden_layers, gammas, epoch, savepath="seq100"):
     start = time.time()
     model.train()
     mean_loss, mean_reg, mean_acc = 0, 0, 0
+    edges = [model.get_edge(v, "hidden") for v in visible_layers]
     for batch_idx, data in enumerate(loader):
         d_0 = {k: v.float().permute(0, 2, 1).to(device) for k, v in zip(LAYERS_NAME, data[:-2]) if k in visible_layers}
         w = data[-1].float().to(device)
@@ -23,6 +24,8 @@ def train(model, optimizer, loader, visible_layers, hidden_layers, epoch, savepa
         optimizer.zero_grad()
         e_0, e_f = model(d_0), model(d_f)
         loss = msa_mean(e_f - e_0, w).clamp(-100, 100)
+        for gamma, edge in zip(gammas, edges):
+            loss += gamma * l1b_reg(edge)
         loss.backward()
         optimizer.step()
 

@@ -1,7 +1,7 @@
 import torch
-from torch.utils.data import DataLoader
-from torch import nn, optim
-from torch.nn import functional as F
+from torch import nn
+
+device = "cpu"
 
 
 def leaky_relu():
@@ -39,7 +39,6 @@ class ResBlock(nn.Module):
                                stride=1, padding=0, bias=bias)
 
     def forward(self, x):
-        identity = x
         out = self.conv_1(x)
         identity = self.conv2(x)
         out += identity
@@ -78,7 +77,6 @@ class ConvNet(nn.Module):
 
     def forward(self, x):
         B, _, N = x.size()
-        C = torch.tensor(range(N)).cuda().view(1, 1, -1)
         h = self.conv1(x)
         h = self.conv2(h)
         h = self.conv3(h)
@@ -144,8 +142,7 @@ class LSTMNet(nn.Module):
 
     def forward(self, x):
         B, _, N = x.size()
-        C = torch.tensor(range(N)).cuda().view(1, 1, -1)
-        h = (x - MEAN) / STD
+        C = torch.tensor(range(N)).to(device).view(1, 1, -1)
 
         h = self.conv1(x)
         h = self.conv2(h)

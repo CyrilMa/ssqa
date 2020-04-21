@@ -45,10 +45,10 @@ class DReLULayer(Layer):
         self.full_name = f"dReLU_{name}"
         self.N, self.shape = N, N
         self.phi = None
-        self.params = nn.ParameterList([nn.Parameter(torch.tensor(1.), requires_grad=False),
-                                        nn.Parameter(torch.tensor(1.), requires_grad=False),
-                                        nn.Parameter(torch.tensor(0.), requires_grad=False),
-                                        nn.Parameter(torch.tensor(0.), requires_grad=False)])
+        self.params = nn.ParameterList([nn.Parameter(torch.tensor(1.), requires_grad=True),
+                                        nn.Parameter(torch.tensor(1.), requires_grad=True),
+                                        nn.Parameter(torch.tensor(0.), requires_grad=True),
+                                        nn.Parameter(torch.tensor(0.), requires_grad=True)])
 
     def sample(self, probas):
         gamma_plus, gamma_minus, theta_plus, theta_minus = self.params
