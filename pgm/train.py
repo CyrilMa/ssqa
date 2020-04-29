@@ -51,15 +51,14 @@ def val(model, loader, visible_layers, hidden_layers, epoch):
     start = time.time()
     model.eval()
     mean_loss, mean_reg, mean_acc = 0, 0, 0
+    Z = model.ais()
     for batch_idx, data in enumerate(loader):
         d_0 = {k: v.float().permute(0, 2, 1).to(device) for k, v in zip(LAYERS_NAME, data[:-1]) if k in visible_layers}
         w = data[-1].float().to(device)
         batch_size, q, N = d_0["sequence"].size()
-
         # Sampling
         d_0, d_f = model.gibbs_sampling(d_0, visible_layers, hidden_layers, k=10)
 
-        # Metrics
         d_0, d_f = model.gibbs_sampling(d_0, visible_layers, hidden_layers, k=1)
         acc = aa_acc(d_0["sequence"].view(batch_size, q, N), d_f["sequence"].view(batch_size, q, N))
         ll = msa_mean(model.integrate_likelihood(d_f, "hidden"), w) / 31
@@ -68,4 +67,4 @@ def val(model, loader, visible_layers, hidden_layers, epoch):
         m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
 
     print(
-        f'''Val Epoch: {epoch} [100%] || Time: {m} min {s} || Loss: {mean_loss:.3f} || Reg: {mean_reg:.3f} || Acc: {mean_acc:.3f}''')
+        f'''Val Epoch: {epoch} [100%] || Time: {m} min {s} || NLL: {mean_loss-Z:.3f} || Acc: {mean_acc:.3f}''')

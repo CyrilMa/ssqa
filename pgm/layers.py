@@ -50,10 +50,10 @@ class DReLULayer(Layer):
                                         nn.Parameter(torch.tensor(0.), requires_grad=True),
                                         nn.Parameter(torch.tensor(0.), requires_grad=True)])
 
-    def sample(self, probas):
+    def sample(self, probas, beta = 1):
         gamma_plus, gamma_minus, theta_plus, theta_minus = self.params
         batch_size = probas[0].size(0)
-        phi = sum([p.view(batch_size, self.N) for p in probas]).clamp(-5, 5)
+        phi = beta * sum([p.view(batch_size, self.N) for p in probas]).clamp(-5, 5)
         self.phi = phi
         _, _, p_plus, p_minus = self._Z(phi)
         sample_plus = TNP((phi - theta_plus) / gamma_plus, 1 / gamma_plus)
@@ -74,15 +74,22 @@ class DReLULayer(Layer):
     def _Z(self, x):
         gamma_plus, gamma_minus, theta_plus, theta_minus = self.params
         r_gamma_plus, r_gamma_minus = math.sqrt(gamma_plus), math.sqrt(gamma_minus)
-        z_plus = (DReLULayer._phi(-(x - theta_plus) / r_gamma_plus) / r_gamma_plus).clamp(-1e4, 1e4)
-        z_minus = (DReLULayer._phi((x - theta_minus) / r_gamma_minus) / r_gamma_minus).clamp(-1e4, 1e4)
+        z_plus = (DReLULayer._phi(-(x - theta_plus) / r_gamma_plus) / r_gamma_plus)
+        z_minus = (DReLULayer._phi((x - theta_minus) / r_gamma_minus) / r_gamma_minus)
         return z_plus, z_minus, DReLULayer.fillna(z_plus / (z_plus + z_minus)), DReLULayer.fillna(z_minus / (z_plus + z_minus))
 
     @staticmethod
     def _phi(x):
         r2 = math.sqrt(2)
         rpi2 = math.sqrt(math.pi / 2)
-        return torch.exp(x ** 2 / 2) * torch.erfc(x / r2) * rpi2
+        phix = torch.exp(x ** 2 / 2) * torch.erfc(x / r2) * rpi2
+        
+        idx = (x > 5)
+        phix[idx] = (1/x[idx])-(1/x[idx]**3)+3/x[idx]**5
+        
+        idx = (x <- 5)
+        phix[idx] = torch.exp(x[idx] ** 2 / 2) * rpi2
+        return phix
 
     @staticmethod
     def fillna(x, val=1):
@@ -105,14 +112,14 @@ class GaussianLayer(Layer):
         self.full_name = f"Gaussian_{name}"
         self.N, self.shape = N, N
 
-    def sample(self, probas):
+    def sample(self, probas, beta = 1):
         batch_size = probas[0].size(0)
-        phi = sum([p.view(batch_size, self.N) for p in probas])
+        phi = beta * sum([p.view(batch_size, self.N) for p in probas])
         distribution = Normal(phi, 1)
         return distribution.sample()
 
     def forward(self, h):
-        return (h.pow(2) / 2).sum(-1)
+        return -(h.pow(2) / 2).sum(-1)
 
     def gamma(self, Iv):
         return (Iv.pow(2) / 2).sum(-1)
@@ -141,20 +148,13 @@ class OneHotLayer(Layer):
     def get_weights(self):
         return self.linear.weights
 
-    def sample(self, probas):
+    def sample(self, probas, beta = 1):
         batch_size = probas[0].size(0)
-        phi = sum([p.view(batch_size, self.q, self.N) for p in probas])
+        phi = beta * sum([p.view(batch_size, self.q, self.N) for p in probas])
         phi += self.linear.weights.view(1, self.q, self.N)
         self.phi = phi
         distribution = OneHotCategorical(probs=F.softmax(phi, 1).permute(0, 2, 1))
         return distribution.sample().permute(0, 2, 1)
-
-    def annealed_sample(self, probas, beta, logp0):
-        batch_size = probas[0].size(0)
-        phi = sum([p.view(batch_size, self.q, self.N) for p in probas])
-        phi += (beta * self.linear.weights + (1 - beta) * logp0).view(1, self.q, self.N)
-        distribution = OneHotCategorical(probs=F.softmax(phi, 1).permute(0, 2, 1))
-        return distribution.sample().permute(0, 2, 1).reshape(batch_size, -1)
 
     def forward(self, x):
         x = x.reshape(x.size(0), -1)

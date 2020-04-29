@@ -108,7 +108,6 @@ def TruncatedNormal(mu, sigma, a, b):
     a = (phi_a + x * (phi_b - phi_a))
     return phi_inv(a) * sigma + mu
 
-
 # Gauges
 
 def ZeroSumGauge(N=31, q=21):
