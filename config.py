@@ -1,2 +1,2 @@
-DATASET = "PF00397"
+DATASET = "PF07736/rbm"
 DATA = "/home/malbranke/data"

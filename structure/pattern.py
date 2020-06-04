@@ -24,7 +24,7 @@ class PatternMatching(nn.Module):
     def match(self, y):
         N = y.size(0)
         P = self.P_(y)
-        Q = self.Q[:, :, :N + 1, :N + 1]
+        Q = self.Q[:, :, :N+1, :N+1]
         P, Q = P.float(), Q.float()
         ll, a, b = self.LL(P, Q)
         s, boxes, _ = self.MLL(P, Q)

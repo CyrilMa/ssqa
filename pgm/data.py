@@ -6,17 +6,19 @@ from torch.utils.data import Dataset
 
 class SequenceStructureData(Dataset):
 
-    def __init__(self, path, train=True):
+    def __init__(self, path, dataset="full"):
         super(SequenceStructureData, self).__init__()
-        idx = np.array(pickle.load(open(f"{path}/is_val.pkl", "rb")))
-        if train:
-            idx = 1 - idx
-        idx = np.array(idx, dtype=bool)
         self.raw_sequences, self.ss_sequences, self.ss_transitions, self.hmms = pickle.load(open(f"{path}/rbm_data.pkl", "rb"))
-        self.raw_sequences, self.ss_sequences, self.ss_transitions, self.hmms = \
-            self.raw_sequences[idx], self.ss_sequences[idx], self.ss_transitions[idx], self.hmms[idx]
         self.weights = np.array(pickle.load(open(f"{path}/weights.pkl", "rb")))
-        self.weights = self.weights[idx]
+
+        if dataset != "full":
+            idx = np.array(pickle.load(open(f"{path}/is_val.pkl", "rb")))
+            if dataset == "train":
+                idx = 1 - idx
+            idx = np.array(idx, dtype=bool)
+            self.raw_sequences, self.ss_sequences, self.ss_transitions, self.hmms = \
+                self.raw_sequences[idx], self.ss_sequences[idx], self.ss_transitions[idx], self.hmms[idx]
+            self.weights = self.weights[idx]
 
     def __len__(self):
         return len(self.raw_sequences)

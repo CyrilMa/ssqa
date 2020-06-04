@@ -24,17 +24,19 @@ def train(model, optimizer, loader, visible_layers, hidden_layers, gammas, epoch
         optimizer.zero_grad()
         e_0, e_f = model(d_0), model(d_f)
         loss = msa_mean(e_f - e_0, w).clamp(-100, 100)
+        reg = torch.tensor(0.)
         for gamma, edge in zip(gammas, edges):
-            loss += gamma * l1b_reg(edge)
+            reg += gamma * l1b_reg(edge)
+        loss += reg
         loss.backward()
         optimizer.step()
 
         # Metrics
         d_0, d_f = model.gibbs_sampling(d_0, visible_layers, hidden_layers, k=1)
         acc = aa_acc(d_0["sequence"].view(batch_size, q, N), d_f["sequence"].view(batch_size, q, N))
-        ll = msa_mean(model.integrate_likelihood(d_f, "hidden"), w).clamp(-100, 100) / 31
+        ll = msa_mean(model.integrate_likelihood(d_f, "hidden"), w) / N
         mean_loss = (mean_loss * batch_idx + ll.item()) / (batch_idx + 1)
-        mean_reg = (mean_reg * batch_idx) / (batch_idx + 1)
+        mean_reg = (mean_reg * batch_idx + reg) / (batch_idx + 1)
         mean_acc = (mean_acc * batch_idx + acc) / (batch_idx + 1)
         m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
 
@@ -61,10 +63,10 @@ def val(model, loader, visible_layers, hidden_layers, epoch):
 
         d_0, d_f = model.gibbs_sampling(d_0, visible_layers, hidden_layers, k=1)
         acc = aa_acc(d_0["sequence"].view(batch_size, q, N), d_f["sequence"].view(batch_size, q, N))
-        ll = msa_mean(model.integrate_likelihood(d_f, "hidden"), w) / 31
+        ll = msa_mean(model.integrate_likelihood(d_f, "hidden"), w) / N
         mean_loss = (mean_loss * batch_idx + ll.item()) / (batch_idx + 1)
         mean_acc = (mean_acc * batch_idx + acc) / (batch_idx + 1)
-        m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
+    m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
 
     print(
         f'''Val Epoch: {epoch} [100%] || Time: {m} min {s} || NLL: {mean_loss-Z:.3f} || Acc: {mean_acc:.3f}''')

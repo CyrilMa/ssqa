@@ -19,17 +19,22 @@ batch_size = 300
 q = 21
 N = 31
 k = 10
-lamb_l1b = 0.25
+lamb_l1b = 0.025
+Nh = 200
 gamma = lamb_l1b / (2 * q * N)
 
-train_dataset = SequenceStructureData(f"{DATA}/{DATASET}")
+train_dataset = SequenceStructureData(f"{DATA}/{DATASET}", dataset="train")
 train_loader = DataLoader(train_dataset, batch_size=batch_size,
                           shuffle=True, drop_last=True)
 
-val_dataset = SequenceStructureData(f"{DATA}/{DATASET}", train=False)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, drop_last=True)
+val_dataset = SequenceStructureData(f"{DATA}/{DATASET}", dataset="val")
+val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
-pots = np.zeros((train_dataset.raw_sequences.shape[1], train_dataset.raw_sequences.shape[2]))
+_, N, qx = train_dataset.raw_sequences.shape
+_, _, qs = train_dataset.ss_sequences.shape
+_, Nt, qt = train_dataset.ss_transitions.shape
+
+pots = np.zeros((N, qx))
 for w, v in zip(train_dataset.weights, train_dataset.raw_sequences):
     pots += w * v
 pots /= np.sum(train_dataset.weights)
@@ -37,7 +42,7 @@ pots = pots.T
 pots = (pots.T - np.mean(pots, 1)).T
 pots = torch.tensor(pots).float().view(-1).to(device)
 
-pots2 = np.zeros((train_dataset.ss_sequences.shape[1], train_dataset.ss_sequences.shape[2]))
+pots2 = np.zeros((N, qs))
 for w, v in zip(train_dataset.weights, train_dataset.ss_sequences):
     pots2 += w * v
 pots2 /= np.sum(train_dataset.weights)
@@ -45,7 +50,7 @@ pots2 = pots2.T
 pots2 = (pots2.T - np.mean(pots2, 1)).T
 pots2 = torch.tensor(pots2).float().view(-1).to(device)
 
-pots3 = np.zeros((train_dataset.ss_transitions.shape[1], train_dataset.ss_transitions.shape[2]))
+pots3 = np.zeros((Nt, qt))
 for w, v in zip(train_dataset.weights, train_dataset.ss_transitions):
     pots3 += w * v
 pots3 /= np.sum(train_dataset.weights)
@@ -58,8 +63,8 @@ print("Training with only sequence")
 visible_layers = ["sequence"]
 hidden_layers = ["hidden"]
 
-v = OneHotLayer(pots, N=68, q=21, name="sequence")
-h = GaussianLayer(N=200, name="hidden")
+v = OneHotLayer(pots, N=N, q=qx, name="sequence")
+h = GaussianLayer(N=Nh, name="hidden")
 
 E = [(v.name, h.name)]
 
@@ -84,9 +89,9 @@ print("Training with sequence and structure")
 visible_layers = ["sequence", "structure"]
 hidden_layers = ["hidden"]
 
-v = OneHotLayer(pots, N=68, q=21, name="sequence")
-s = OneHotLayer(pots2, N=68, q=4, name="structure")
-h = GaussianLayer(N=200, name="hidden")
+v = OneHotLayer(pots, N=N, q=qx, name="sequence")
+s = OneHotLayer(pots2, N=N, q=qs, name="structure")
+h = GaussianLayer(N=Nh, name="hidden")
 
 E = [(v.name, h.name),
      (s.name, h.name),
@@ -114,10 +119,10 @@ print("Training with sequence, structure and length")
 visible_layers = ["sequence", "structure", "transitions"]
 hidden_layers = ["hidden"]
 
-v = OneHotLayer(pots, N=68, q=21, name="sequence")
-s = OneHotLayer(pots2, N=68, q=4, name="structure")
-t = OneHotLayer(pots3, N=7, q=10, name="transitions")
-h = GaussianLayer(N=200, name="hidden")
+v = OneHotLayer(pots, N=N, q=qx, name="sequence")
+s = OneHotLayer(pots2, N=N, q=qs, name="structure")
+t = OneHotLayer(pots3, N=Nt, q=qt, name="transitions")
+h = GaussianLayer(N=Nh, name="hidden")
 
 E = [(v.name, h.name),
      (s.name, h.name),
