@@ -1,10 +1,9 @@
 import time
 from structure.utils import *
-from .metrics import aa_acc, l1b_reg, msa_mean
+from .utils import aa_acc, l1b_reg, msa_mean
 
 torch.cuda.is_available()
 device = torch.device('cpu')
-LAYERS_NAME = ["sequence", "structure", "transitions"]
 
 
 def train(model, optimizer, loader, visible_layers, hidden_layers, gammas, epoch, savepath="seq100"):

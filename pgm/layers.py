@@ -7,7 +7,7 @@ from torch.nn import functional as F
 from torch.distributions.one_hot_categorical import OneHotCategorical
 from torch.distributions.normal import Normal
 
-from .metrics import TNP, TNM
+from .utils import TNP, TNM
 
 
 class Layer(nn.Module):
@@ -50,7 +50,7 @@ class DReLULayer(Layer):
                                         nn.Parameter(torch.tensor(0.), requires_grad=True),
                                         nn.Parameter(torch.tensor(0.), requires_grad=True)])
 
-    def sample(self, probas, beta = 1):
+    def sample(self, probas, beta=1):
         gamma_plus, gamma_minus, theta_plus, theta_minus = self.params
         batch_size = probas[0].size(0)
         phi = beta * sum([p.view(batch_size, self.N) for p in probas]).clamp(-5, 5)
@@ -76,27 +76,27 @@ class DReLULayer(Layer):
         r_gamma_plus, r_gamma_minus = math.sqrt(gamma_plus), math.sqrt(gamma_minus)
         z_plus = (DReLULayer._phi(-(x - theta_plus) / r_gamma_plus) / r_gamma_plus)
         z_minus = (DReLULayer._phi((x - theta_minus) / r_gamma_minus) / r_gamma_minus)
-        return z_plus, z_minus, DReLULayer.fillna(z_plus / (z_plus + z_minus)), DReLULayer.fillna(z_minus / (z_plus + z_minus))
+        return z_plus, z_minus, DReLULayer.fillna(z_plus / (z_plus + z_minus)), DReLULayer.fillna(
+            z_minus / (z_plus + z_minus))
 
     @staticmethod
     def _phi(x):
         r2 = math.sqrt(2)
         rpi2 = math.sqrt(math.pi / 2)
         phix = torch.exp(x ** 2 / 2) * torch.erfc(x / r2) * rpi2
-        
+
         idx = (x > 5)
-        phix[idx] = (1/x[idx])-(1/x[idx]**3)+3/x[idx]**5
-        
-        idx = (x <- 5)
+        phix[idx] = (1 / x[idx]) - (1 / x[idx] ** 3) + 3 / x[idx] ** 5
+
+        idx = (x < - 5)
         phix[idx] = torch.exp(x[idx] ** 2 / 2) * rpi2
         return phix
 
     @staticmethod
     def fillna(x, val=1):
-        idx = torch.where(x != x)[0]
+        idx = torch.where(x.__ne__(x))[0]
         x[idx] = val
         return x
-
 
 class GaussianLayer(Layer):
     r"""
@@ -112,7 +112,7 @@ class GaussianLayer(Layer):
         self.full_name = f"Gaussian_{name}"
         self.N, self.shape = N, N
 
-    def sample(self, probas, beta = 1):
+    def sample(self, probas, beta=1):
         batch_size = probas[0].size(0)
         phi = beta * sum([p.view(batch_size, self.N) for p in probas])
         distribution = Normal(phi, 1)
@@ -144,11 +144,13 @@ class OneHotLayer(Layer):
         self.phi = None
         if weights is not None:
             self.linear.weights = weights.view(1, -1)
+        for param in self.parameters():
+            param.requires_grad = False
 
     def get_weights(self):
         return self.linear.weights
 
-    def sample(self, probas, beta = 1):
+    def sample(self, probas, beta=1):
         batch_size = probas[0].size(0)
         phi = beta * sum([p.view(batch_size, self.q, self.N) for p in probas])
         phi += self.linear.weights.view(1, self.q, self.N)
@@ -159,3 +161,8 @@ class OneHotLayer(Layer):
     def forward(self, x):
         x = x.reshape(x.size(0), -1)
         return self.linear(x)
+
+    def l2_reg(self):
+        w = self.get_weights()
+        return (w ** 2).sum()
+

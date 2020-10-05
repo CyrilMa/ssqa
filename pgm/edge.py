@@ -1,9 +1,5 @@
-import numpy as np
-import time
-
 import torch
 from torch import nn
-from torch.nn import functional as F
 
 from .utils import device
 
@@ -76,6 +72,18 @@ class Edge(nn.Module):
         if sample:
             x_rec = self.in_layer.sample([mut])
         return x_rec, h, mut, mu
+
+    def l1b_reg(self, edge):
+        r"""
+        Evaluate the L1b factor for the weights of an edge
+
+        Args:
+            edge (Edge): edge to be evaluated
+        """
+        w = self.get_weights()
+        reg = torch.abs(w).sum(-1)
+        return reg.pow(2).sum(0)
+
 
     def save(self, filename):
         torch.save(self, filename)
