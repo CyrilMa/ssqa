@@ -30,7 +30,14 @@ class MRF(nn.Module):
         self.G = self.build_graph()
         self.Z = 0
         self.ais()
+        self.device = "cpu"
         draw_G(self.G)
+        
+    def to(self, device):
+        super(MRF, self).to(device)
+        self.device = device
+        return self
+
 
     def build_graph(self):
         G = nx.Graph()
@@ -132,7 +139,7 @@ class MRF(nn.Module):
             return self.get_edge(o, i).backward(x, sample=False)
         return None
 
-    def train(self, optimizer, loader, visible_layers, hidden_layers, gammas, epoch, savepath="seq100"):
+    def train_epoch(self, optimizer, loader, visible_layers, hidden_layers, gammas, epoch, savepath="seq100"):
         start = time.time()
         self.train()
         mean_loss, mean_reg, mean_acc = 0, 0, 0

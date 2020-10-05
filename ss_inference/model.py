@@ -11,11 +11,17 @@ class BaseNet(nn.Module):
     def __init__(self, in_channels):
         super(BaseNet, self).__init__()
         self.in_channels = in_channels
+        self.device = "cpu"
+        
+    def to(self, device):
+        super(BaseNet, self).to(device)
+        self.device = device
+        return self
 
     def forward(self, x):
         pass
 
-    def train(self, loader, optimizer, epoch = 0, verbose = 2):
+    def train_epoch(self, loader, optimizer, epoch = 0, verbose = 2):
         n_res, mean_ss3, mean_ss8, mean_box, mean_other, mean_loss, mean_ss3_acc, mean_ss8_acc = 0, 0, 0, 0, 0, 0, 0, 0
         start = time.time()
         self.train()
@@ -61,7 +67,7 @@ class BaseNet(nn.Module):
             || Other Loss: {mean_other:.3f}''')
         return mean_ss3_acc, mean_ss8_acc, mean_loss, mean_ss3, mean_ss8
 
-    def val(self, loader, epoch = 0, verbose = 2):
+    def val_epoch(self, loader, epoch = 0, verbose = 2):
         mean_ss3_acc, mean_ss8_acc, n_res = 0, 0, 0
         start = time.time()
         self.eval()
@@ -87,7 +93,7 @@ class BaseNet(nn.Module):
             m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
             if verbose > 1:
                 print(
-                    f'''Val Epoch: {epoch} [{int(100 * batch_idx / len(loader))}%] || Time: {m} min {s} ||| \
+                    f'''Val Epoch: {epoch} [{int(100 * batch_idx / len(loader))}%] || Time: {m} min {s} || \
                     SS3 Acc: {mean_ss3_acc:.3f} || SS8 Acc: {mean_ss8_acc:.3f}''',
                     end="\r")
         m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
@@ -111,10 +117,10 @@ class BaseNet(nn.Module):
 
             p_ss3 = F.softmax(p_ss3, 1)
             p_ss8 = F.softmax(p_ss8, 1)
-            ss3.append(p_ss3)
-            ss8.append(p_ss8)
-            others.append(p_other)
-        return torch.cat(others, 0), torch.cat(ss8, 0), torch.cat(ss3, 0)
+            ss3.append(p_ss3[0])
+            ss8.append(p_ss8[0])
+            others.append(p_other[0])
+        return others, ss8, ss3
 
 class NetSurfP2(BaseNet):
     def __init__(self, in_channels):

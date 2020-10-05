@@ -2,20 +2,18 @@ import numpy as np
 import pickle
 
 import torch
+from torch.utils.data import Dataset
 
-class SecondaryStructureDataset(object):
+class SecondaryStructureAnnotatedDataset(Dataset):
 
-    def __init__(self, file, target = True):
+    def __init__(self, file):
         self.primary, self.ss3 = [], []
         data = pickle.load(open(file, 'rb'))
         self.primary = [p[:, :50] for p, _ in data.values()]
-        if target:
-            self.target = [np.concatenate((p[:, 51:57],
-                                           p[:, 65:],
-                                           np.argmax(p[:, 57:65], 1).reshape(p.shape[0], 1),
-                                           np.array(s).reshape(len(s), 1)), axis=1) for p, s in data.values()]
-        else:
-            self.target = [None for _ in range(len(data))]
+        self.target = [np.concatenate((p[:, 51:57],
+                                       p[:, 65:],
+                                       np.argmax(p[:, 57:65], 1).reshape(p.shape[0], 1),
+                                       np.array(s).reshape(len(s), 1)), axis=1) for p, s in data.values()]
         del data
 
     def __len__(self):
@@ -23,6 +21,20 @@ class SecondaryStructureDataset(object):
 
     def __getitem__(self, i):
         return self.primary[i], self.target[i]
+    
+class SecondaryStructureRawDataset(Dataset):
+
+    def __init__(self, file):
+        self.primary, self.ss3 = [], []
+        data = pickle.load(open(file, 'rb'))
+        self.primary = [p[:, :50] for p in data.values()]
+        del data
+
+    def __len__(self):
+        return len(self.primary)
+
+    def __getitem__(self, i):
+        return self.primary[i], None
 
 
 def collate_sequences(data):
