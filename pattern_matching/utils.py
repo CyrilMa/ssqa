@@ -8,7 +8,7 @@ PROFILE_HEADER = ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
                   'M->M', 'M->I', 'M->D', 'I->M', 'I->I',
                   'D->M', 'D->D', 'Neff', 'Neff_I', 'Neff_D')  # yapf: disable
 AMINO_ACIDS = AA = 'ACDEFGHIKLMNPQRSTVWY'
-AA_INDEX = {k: i for i, k in enumerate(AA)}
+AA_INDEX = AA_IDS = {k: i for i, k in enumerate(AA)}
 AA_MAT = None
 
 # Dictionary to convert 'secStructList' codes to DSSP values

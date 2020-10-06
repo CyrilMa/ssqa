@@ -45,4 +45,4 @@ class SequenceData(Dataset):
         return len(self.raw_sequences)
 
     def __getitem__(self, i):
-        return self.raw_sequences[i], None, None, self.hmms[i], self.weights[i]
+        return self.raw_sequences[i], [], [], self.hmms[i], self.weights[i]

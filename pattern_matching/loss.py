@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 inf = float("Inf")
 
@@ -28,13 +29,15 @@ class PatternMatchingLoss(nn.Module):
             hmm[i, :20, :n_idx] = x_[1:, idx]
             hmm[i, 20:, :n_idx] = self.SEQ_HMM[:, idx]
         ls = torch.tensor(ls)
-        p_ss3 = self.model_ss3(hmm)[2].cpu()
-        a = self.match(p_ss3 + 1e-8)
-        return a[torch.arange(batch_size), ls] / ls
+        hmm = hmm.to(self.model_ss3.device)
+        p_ss3 = F.softmax(self.model_ss3(hmm)[2].cpu(),1)
+        a = self.match(p_ss3)
+        res = a[torch.arange(batch_size), ls] / ls
+        return res
 
     def match(self, y):
         P = self.P_(y).float()
-        P = torch.log(torch.exp(P) + 1e-8)
+        P = torch.log(torch.exp(P)+1e-8)
         a = self.sum_alpha(P, self.Q)
         return a
 

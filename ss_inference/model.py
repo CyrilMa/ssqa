@@ -1,4 +1,5 @@
 import time
+from tqdm import tqdm
 
 import torch
 from torch import nn
@@ -106,7 +107,7 @@ class BaseNet(nn.Module):
     def predict(self, loader):
         self.eval()
         ss3, ss8, others = [], [],[]
-        for batch_idx, (x,t, is_empty) in enumerate(loader):
+        for batch_idx, (x,t, is_empty) in tqdm(enumerate(loader)):
             x = x.float().permute(0, 2, 1).to(self.device)[:, :50]
             is_empty = is_empty.float().permute(0, 2, 1).to(self.device)
 
@@ -117,9 +118,10 @@ class BaseNet(nn.Module):
 
             p_ss3 = F.softmax(p_ss3, 1)
             p_ss8 = F.softmax(p_ss8, 1)
-            ss3.append(p_ss3[0])
-            ss8.append(p_ss8[0])
-            others.append(p_other[0])
+            ss3.append(p_ss3[0].detach())
+            ss8.append(p_ss8[0].detach())
+            others.append(p_other[0].detach())
+            torch.cuda.empty_cache()
         return others, ss8, ss3
 
 class NetSurfP2(BaseNet):

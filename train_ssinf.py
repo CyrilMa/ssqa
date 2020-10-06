@@ -21,7 +21,7 @@ model = NetSurfP2(50)
 model = model.to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-max_acc = 0
+max_acc = 2
 for i in range(50):
     model.train_epoch(train_loader, optimizer, i)
     mean_ss3_acc, _, _ = model.val_epoch(val_loader, i)
