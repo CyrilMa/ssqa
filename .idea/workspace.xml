@@ -1,7 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0181bba7-5666-4018-9f1a-3336ee67b6fd" name="Default Changelist" comment="" />
+    <list default="true" id="0181bba7-5666-4018-9f1a-3336ee67b6fd" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/img/sampling_edca_PF00397.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/img/sampling_edca_PF07736.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/img/sampling_ss_PF00397.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/img/sampling_ss_PF07736.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/build_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/analysis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/chorismate_mutase.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/chorismate_mutase.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/dataviz.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/dataviz.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/full_track.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/full_track.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/rejection_dca_sampling.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/rejection_dca_sampling.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pattern_matching/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pattern_matching/data_extraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/data_extraction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pattern_matching/loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/loss.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pattern_matching/pattern.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/pattern.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pgm/edge.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/edge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pgm/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ss_inference/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/ss_inference/data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_rbm.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_rbm.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_ssinf.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ssinf.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -106,6 +127,11 @@
       <option name="presentableId" value="Default" />
       <updated>1585666730906</updated>
       <workItem from="1601898493023" duration="1942000" />
+      <workItem from="1602016474425" duration="177000" />
+      <workItem from="1602068240947" duration="6371000" />
+      <workItem from="1602148688182" duration="11654000" />
+      <workItem from="1602501590346" duration="3510000" />
+      <workItem from="1602581184252" duration="2839000" />
     </task>
     <servers />
   </component>
@@ -116,9 +142,14 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="2913" y="553" width="635" height="367" key="#Notifications" timestamp="1601898513109">
-      <screen x="1920" y="0" width="2560" height="1440" />
+    <state x="789" y="431" width="459" height="283" key="#Notifications" timestamp="1602084130487">
+      <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="2913" y="553" width="635" height="367" key="#Notifications/1920.0.2560.1440/0.27.1920.1053@1920.0.2560.1440" timestamp="1601898513109" />
+    <state x="789" y="431" width="459" height="283" key="#Notifications/72.27.1848.1053@72.27.1848.1053" timestamp="1602084130487" />
+    <state x="2302" y="27" width="2178" height="1369" key="dock-window-1" timestamp="1602171261423">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2302" y="27" width="2178" height="1369" key="dock-window-1/1920.0.2560.1440/0.27.1920.1053@1920.0.2560.1440" timestamp="1602171261423" />
   </component>
 </project>

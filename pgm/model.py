@@ -1,15 +1,13 @@
-import math
 import time
 import networkx as nx
 
-import torch
 from torch import nn
+from torch.utils.tensorboard import SummaryWriter
 
 from .edge import Edge
 from .utils import *
 from .graphic import draw_G
 from .utils import device
-
 
 class MRF(nn.Module):
     r"""
@@ -19,7 +17,7 @@ class MRF(nn.Module):
         edges (List of tuples): List of all edges between layers
     """
 
-    def __init__(self, layers, edges):
+    def __init__(self, layers, edges, name):
         super(MRF, self).__init__()
         self.layers = nn.ModuleDict(layers)
         self.in_, self.out_ = [k for k in self.layers.keys() if k != "hidden"], "hidden"
@@ -31,13 +29,18 @@ class MRF(nn.Module):
         self.Z = 0
         self.ais()
         self.device = "cpu"
+        self.name = f"{name}-{self.layers[self.out].N}"
+        self.writer = SummaryWriter(self.name)
+
         draw_G(self.G)
-        
+
+    def __repr__(self):
+        return f"MRF {self.name}"
+
     def to(self, device):
         super(MRF, self).to(device)
         self.device = device
         return self
-
 
     def build_graph(self):
         G = nx.Graph()
@@ -139,6 +142,10 @@ class MRF(nn.Module):
             return self.get_edge(o, i).backward(x, sample=False)
         return None
 
+    def write_tensorboard(self, logs, n_iter):
+        for k, v in logs.items():
+            self.writer.add_scalar(k, v, n_iter)
+
     def train_epoch(self, optimizer, loader, visible_layers, hidden_layers, gammas, epoch, savepath="seq100"):
         start = time.time()
         self.train()
@@ -172,9 +179,13 @@ class MRF(nn.Module):
             mean_acc = (mean_acc * batch_idx + acc) / (batch_idx + 1)
             m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
 
-        print(
+            print(
             f'''Train Epoch: {epoch} [100%] || Time: {m} min {s} || Loss: {mean_loss:.3f} || Reg: {mean_reg:.3f} || Acc: {mean_acc:.3f}''',
             end="\r")
+        print(
+            f'''Train Epoch: {epoch} [100%] || Time: {m} min {s} || Loss: {mean_loss:.3f} || Reg: {mean_reg:.3f} || Acc: {mean_acc:.3f}''')
+        logs = {"Train Loss" : mean_loss, "Train reg" : mean_reg, "Train acc" : mean_acc}
+        self.write_tensorboard(logs, epoch)
         if not epoch % 30:
             print(
                 f'''Train Epoch: {epoch} [100%] || Time: {m} min {s} || Loss: {mean_loss:.3f} || Reg: {mean_reg:.3f} || Acc: {mean_acc:.3f}''')
@@ -200,6 +211,7 @@ class MRF(nn.Module):
             mean_pvh = (mean_pvh * batch_idx + pvh.item()) / (batch_idx + 1)
             mean_acc = (mean_acc * batch_idx + acc) / (batch_idx + 1)
         m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
-
+        logs = {"Val P(v)" : mean_pv, "Val P(v,h)" : mean_pvh, "Val acc" : mean_acc, "AIS": self.Z}
+        self.write_tensorboard(logs, epoch)
         print(
             f'''Val Epoch: {epoch} [100%] || Time: {m} min {s} || P(v): {mean_pv:.3f} || P(v,h): {mean_pvh:.3f} || Acc: {mean_acc:.3f}''')

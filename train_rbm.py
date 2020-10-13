@@ -16,8 +16,8 @@ batch_size = 300
 q = 21
 k = 10
 lamb_l1b = 0.025
-Nh = 200
-DATASET = "PF00397"
+Nh = 1000
+DATASET = "PF00296"
 
 train_dataset = SequenceData(f"{DATA}/{DATASET}", dataset="train")
 train_loader = DataLoader(train_dataset, batch_size=batch_size,
@@ -49,7 +49,7 @@ E = [(v.name, h.name)]
 
 model = MRF(layers={v.name: v,
                     h.name: h},
-            edges=E)
+            edges=E, log_dir = DATASET)
 
 for visible in visible_layers:
     edge = model.get_edge(visible, "hidden")
@@ -59,6 +59,6 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 for epoch in range(4000):
     model.train_epoch(optimizer, train_loader, visible_layers, hidden_layers, [gamma], epoch,
-          savepath=f"{DATA}/{DATASET}/weights/seq-reg-200")
+          savepath=f"{DATA}/{DATASET}/weights/seq-reg-1000")
     if not epoch % 30:
         model.val(val_loader, visible_layers, hidden_layers, epoch)

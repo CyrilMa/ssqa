@@ -53,8 +53,8 @@ def from_df_to_fasta(folder, file, chunksize=5000):
         records_aligned = []
         records_unaligned = []
         for i, (ind, data) in enumerate(df.iterrows()):
-            records_aligned.append(SeqRecord(Seq(data.aligned_seq), id=ind))
-            records_unaligned.append(SeqRecord(Seq(data.seq), id=ind))
+            records_aligned.append(SeqRecord(Seq(data.aligned_seq), id=str(ind)))
+            records_unaligned.append(SeqRecord(Seq(data.seq), id=str(ind)))
             print(f"Processing {i + chunksize * k} sequences ...", end="\r")
         with open(f"{folder}/aligned.fasta", "a+") as handle:
             SeqIO.write(records_aligned, handle, "fasta")
@@ -84,7 +84,6 @@ def cluster_weights(folder):
 def split_train_val_set(folder, ratio=0.1):
     clusters = pd.read_table(f"{folder}/tmp/clusters.tsv_cluster.tsv", names=["clusters", "id"]).set_index(
         "id").clusters
-    counts = clusters.value_counts()
     max_size = ratio * len(clusters)
     val = []
     unique_clusters = list(clusters.unique())

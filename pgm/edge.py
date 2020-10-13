@@ -73,7 +73,7 @@ class Edge(nn.Module):
             x_rec = self.in_layer.sample([mut])
         return x_rec, h, mut, mu
 
-    def l1b_reg(self, edge):
+    def l1b_reg(self):
         r"""
         Evaluate the L1b factor for the weights of an edge
 

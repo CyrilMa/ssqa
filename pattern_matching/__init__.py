@@ -1,3 +1,3 @@
-from .loss import PatternMatchingLoss
-from .pattern import PatternMatching, StablePatternMatching
+from .loss import *
+from .pattern import PatternMatching
 
