@@ -5,7 +5,29 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .utils import trace
+
 inf = float("Inf")
+
+inf = float("Inf")
+
+class Matching(object):
+    def __init__(self, x):
+        super(Matching, self).__init__()
+        self.x = x
+        self.batch_size = x.size(0)
+        self.len_pat = None
+        self.ss3 = None
+        self.P = None
+        self.M = None
+        self.a = None
+        self.b = None
+        self.ll = None
+        self.ls = None
+        self.p = None
+        self.t = None
+        self.L = None
+
 
 class PatternMatching(nn.Module):
 
@@ -24,45 +46,43 @@ class PatternMatching(nn.Module):
     def __repr__(self):
         return self.name
 
-    def forward(self, x, single_marginalize = True, double_marginalize = True):
-        batch_size = x.size(0)
-        hmm = torch.zeros(batch_size, 20 + self.SEQ_HMM.size(0), self.size)
-        ls = []
-        for i, x_ in zip(range(batch_size), x):
-            idx = torch.where(x_[0] == 0)[0]
-            n_idx = idx.size(0)
-            ls.append(n_idx)
-            hmm[i, :20, :n_idx] = x_[:20, idx]
-            hmm[i, 20:, :n_idx] = self.SEQ_HMM[:, idx]
-        ls = torch.tensor(ls)
-
+    def forward(self, m:Matching):
+        batch_size = m.batch_size
+        hmm, m.ls = self.hmm_(m)
         hmm = hmm.to(self.model_ss3.device)
-        y = F.softmax(self.model_ss3(hmm)[2].cpu(),1)
-        P = self.P_(y).float()
-        a = self.sum_alpha(P)
-        b = self.sum_beta(P, ls)
-        ll = a + b
-        M = a[torch.arange(batch_size), -1, ls]
-        p, t = None, None
-        if single_marginalize:
-            p = self.single_marginalize(P, a, b, M)
-        if double_marginalize:
-            t = self.double_marginalize(P, a, b, M)
-        return M, ll, a, b, ls, p, t
+        m.ss3 = F.softmax(self.model_ss3(hmm)[2].cpu(),1)
+        m.P = self.P_(m.ss3).float()
+        m.a = self.sum_alpha(m)
+        m.b = self.sum_beta(m)
+        m.ll = m.a + m.b
+        m.M = m.a[torch.arange(batch_size), -1, m.ls]
+        m.p = self.p_marginalize(m)
+        m.t = self.t_marginalize(m)
+        m.l = self.l_marginalize(m)
+        return m
 
-    def single_marginalize(self, P, a, b, M):
-        batch_size, len_pat, _ = a.size()
+    @staticmethod
+    def p_marginalize(m):
+        batch_size, a, b, M = m.batch_size, m.a, m.b, m.M
         p = a+b-M.view(batch_size, 1, 1)
         return p
 
-    def double_marginalize(self, P, a, b, M):
-        batch_size, len_pat, _ = a.size()
+    def t_marginalize(self, m):
+        batch_size, len_pat, P, a, b, M = m.batch_size, m.len_pat, m.P, m.a, m.b, m.M
         t = a[:, :-1].view(batch_size, len_pat-1,-1,1)+b[:, 1:].view(batch_size, len_pat-1,1,-1)+P[:, 0, self.pattern]+\
-            self.Q[:, 0, self.pattern]-M.view(batch_size, 1, 1, 1)
+            self.Q[:, 0, self.pattern]- M.view(batch_size, 1, 1, 1)
         return t
 
-    def sum_alpha(self, P):
-        batch_size = P.size(0)
+    @staticmethod
+    def l_marginalize(m, n = 30):
+        batch_size, len_pat, t = m.batch_size, m.len_pat, m.t
+        L = torch.zeros((batch_size, len_pat, n))
+        for j in range(30):
+            L[:, :, j] = trace(torch.exp(t), offset=j)
+        return L
+
+    def sum_alpha(self, m):
+        batch_size, P = m.batch_size, m.P
         alpha, norm = [], []
         a_ = -torch.ones(batch_size, self.size+1) * inf
         a_[:,0] = 0
@@ -80,8 +100,8 @@ class PatternMatching(nn.Module):
         norm = torch.cat([n_.view(batch_size, 1, 1) for n_ in norm], 1)
         return alpha + norm
 
-    def sum_beta(self, P, ls):
-        batch_size = P.size(0)
+    def sum_beta(self, m):
+        batch_size, P, ls = m.batch_size, m.P, m.ls
         beta, norm = [], []
         b_ = -torch.ones(batch_size, self.size+1) * inf
         b_[torch.arange(batch_size),ls] = 0
@@ -99,11 +119,24 @@ class PatternMatching(nn.Module):
         norm = torch.cat([n_.view(batch_size, 1, 1) for n_ in norm[::-1]], 1)
         return beta + norm
 
+    def hmm_(self, m):
+        batch_size, x = m.batch_size, m.x
+        hmm = torch.zeros(batch_size, 20 + self.SEQ_HMM.size(0), self.size)
+        ls = []
+        for i, x_ in zip(range(batch_size), x):
+            idx = torch.where(x_[0] == 0)[0]
+            n_idx = idx.size(0)
+            ls.append(n_idx)
+            hmm[i, :20, :n_idx] = x_[:20, idx]
+            hmm[i, 20:, :n_idx] = self.SEQ_HMM[:, idx]
+        ls = torch.tensor(ls)
+        return hmm, ls
+
     def P_(self, y):
         C = torch.log(y)
         batch_size = C.size(0)
         P = torch.zeros(batch_size, 3, self.size + 1, self.size + 1)
-        for i in range(self.size):
+        for i in range(self.size+1):
             P[:, :, i, :i + 1] = -inf
             if i == self.size:
                 break
@@ -148,3 +181,5 @@ def set_const(dataset, max_size=400):
     Q = Q.reshape(1, *Q.shape)
     pickle.dump((Q, T, pi), open(f"statistics.pkl", "wb"))
     return Q, T, pi
+
+

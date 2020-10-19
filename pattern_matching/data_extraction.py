@@ -4,7 +4,7 @@ from tqdm import tqdm
 import subprocess
 
 from random import shuffle
-from .utils import *
+from ..utils import *
 
 import biotite
 import biotite.structure as struc
@@ -17,7 +17,6 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 import netsurfp2 as nsp2
-
 
 # SEQUENCE EXTRACTION
 

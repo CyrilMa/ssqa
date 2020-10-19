@@ -5,9 +5,10 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
 from .edge import Edge
-from .utils import *
+from ..utils import *
 from .graphic import draw_G
-from .utils import device
+
+DATA = '/home/malbranke/data'
 
 class MRF(nn.Module):
     r"""
@@ -29,8 +30,8 @@ class MRF(nn.Module):
         self.Z = 0
         self.ais()
         self.device = "cpu"
-        self.name = f"{name}-{self.layers[self.out].N}"
-        self.writer = SummaryWriter(self.name)
+        self.name = f"{name}-{self.layers[self.out_].N}"
+        self.writer = SummaryWriter(f"{DATA}/tensorboard/pgm/{self.name}")
 
         draw_G(self.G)
 
@@ -180,11 +181,11 @@ class MRF(nn.Module):
             m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
 
             print(
-            f'''Train Epoch: {epoch} [100%] || Time: {m} min {s} || Loss: {mean_loss:.3f} || Reg: {mean_reg:.3f} || Acc: {mean_acc:.3f}''',
+            f'''Train Epoch: {epoch} [{int(100*batch_idx/len(loader))}%] || Time: {m} min {s} || Loss: {mean_loss:.3f} || Reg: {mean_reg:.3f} || Acc: {mean_acc:.3f}''',
             end="\r")
         print(
             f'''Train Epoch: {epoch} [100%] || Time: {m} min {s} || Loss: {mean_loss:.3f} || Reg: {mean_reg:.3f} || Acc: {mean_acc:.3f}''')
-        logs = {"Train Loss" : mean_loss, "Train reg" : mean_reg, "Train acc" : mean_acc}
+        logs = {"train/loss" : mean_loss, "train/reg" : mean_reg, "train/acc" : mean_acc}
         self.write_tensorboard(logs, epoch)
         if not epoch % 30:
             print(
@@ -211,7 +212,7 @@ class MRF(nn.Module):
             mean_pvh = (mean_pvh * batch_idx + pvh.item()) / (batch_idx + 1)
             mean_acc = (mean_acc * batch_idx + acc) / (batch_idx + 1)
         m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
-        logs = {"Val P(v)" : mean_pv, "Val P(v,h)" : mean_pvh, "Val acc" : mean_acc, "AIS": self.Z}
+        logs = {"val/p(v)" : mean_pv, "val/p(v,h)" : mean_pvh, "val/acc" : mean_acc, "val/ais": self.Z}
         self.write_tensorboard(logs, epoch)
         print(
             f'''Val Epoch: {epoch} [100%] || Time: {m} min {s} || P(v): {mean_pv:.3f} || P(v,h): {mean_pvh:.3f} || Acc: {mean_acc:.3f}''')

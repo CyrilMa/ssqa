@@ -2,14 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0181bba7-5666-4018-9f1a-3336ee67b6fd" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/img/sampling_edca_PF00397.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img/sampling_edca_PF07736.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img/sampling_ss_PF00397.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img/sampling_ss_PF07736.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/cm.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/cm_russ.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/ww.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pattern_matching/local.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/build_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/img/sampling_edca_PF00397.png" beforeDir="false" afterPath="$PROJECT_DIR$/img/sampling_edca_PF00397.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/img/sampling_ss_PF00397.png" beforeDir="false" afterPath="$PROJECT_DIR$/img/sampling_ss_PF00397.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/analysis.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/chorismate_mutase.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/chorismate_mutase.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/chorismate_mutase.ipynb" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/dataviz.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/dataviz.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/full_track.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/full_track.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/rejection_dca_sampling.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/rejection_dca_sampling.ipynb" afterDir="false" />
@@ -17,9 +18,13 @@
       <change beforePath="$PROJECT_DIR$/pattern_matching/data_extraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/data_extraction.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pattern_matching/loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/loss.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pattern_matching/pattern.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/pattern.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pattern_matching/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pgm/edge.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/edge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pgm/layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/layers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pgm/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ss_inference/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/ss_inference/data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pgm/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ss_inference/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/ss_inference/model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ss_inference/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/ss_inference/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train_rbm.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_rbm.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train_ssinf.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ssinf.py" afterDir="false" />
     </list>
@@ -52,11 +57,14 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/ss_inference" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/ss_inference" />
+      <recent name="$PROJECT_DIR$/pgm" />
+      <recent name="$PROJECT_DIR$/pattern_matching" />
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -131,7 +139,9 @@
       <workItem from="1602068240947" duration="6371000" />
       <workItem from="1602148688182" duration="11654000" />
       <workItem from="1602501590346" duration="3510000" />
-      <workItem from="1602581184252" duration="2839000" />
+      <workItem from="1602581184252" duration="9391000" />
+      <workItem from="1602671314757" duration="5275000" />
+      <workItem from="1603096604343" duration="6743000" />
     </task>
     <servers />
   </component>
@@ -147,9 +157,21 @@
     </state>
     <state x="2913" y="553" width="635" height="367" key="#Notifications/1920.0.2560.1440/0.27.1920.1053@1920.0.2560.1440" timestamp="1601898513109" />
     <state x="789" y="431" width="459" height="283" key="#Notifications/72.27.1848.1053@72.27.1848.1053" timestamp="1602084130487" />
+    <state x="2969" y="482" width="524" height="510" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1602862355220">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2969" y="482" width="524" height="510" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/1920.0.2560.1440/0.27.1920.1053@1920.0.2560.1440" timestamp="1602862355220" />
+    <state width="498" height="447" key="SwitcherDM" timestamp="1602591864462">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state width="498" height="447" key="SwitcherDM/1920.0.2560.1440/0.27.1920.1053@1920.0.2560.1440" timestamp="1602591864462" />
     <state x="2302" y="27" width="2178" height="1369" key="dock-window-1" timestamp="1602171261423">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
     <state x="2302" y="27" width="2178" height="1369" key="dock-window-1/1920.0.2560.1440/0.27.1920.1053@1920.0.2560.1440" timestamp="1602171261423" />
+    <state x="2899" y="349" width="672" height="678" key="search.everywhere.popup" timestamp="1602592941334">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2899" y="349" width="672" height="678" key="search.everywhere.popup/1920.0.2560.1440/0.27.1920.1053@1920.0.2560.1440" timestamp="1602592941334" />
   </component>
 </project>

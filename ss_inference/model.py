@@ -2,18 +2,25 @@ import time
 from tqdm import tqdm
 
 import torch
+from torch.utils.tensorboard import SummaryWriter
 from torch import nn
 from torch.nn import functional as F
 
-
 from .layers import ResBlock, ConvBlock
 
+DATA = '/home/malbranke/data'
+
 class BaseNet(nn.Module):
-    def __init__(self, in_channels):
+    def __init__(self, in_channels, name):
         super(BaseNet, self).__init__()
         self.in_channels = in_channels
         self.device = "cpu"
-        
+        self.name = name
+        self.writer = SummaryWriter(f"{DATA}/tensorboard/ss_inf/{self.name}-{self.in_channels}")
+
+    def __repr__(self):
+        return f"Model {self.name}-{self.in_channels}"
+
     def to(self, device):
         super(BaseNet, self).to(device)
         self.device = device
@@ -21,6 +28,10 @@ class BaseNet(nn.Module):
 
     def forward(self, x):
         pass
+
+    def write_tensorboard(self, logs, n_iter):
+        for k, v in logs.items():
+            self.writer.add_scalar(k, v, n_iter)
 
     def train_epoch(self, loader, optimizer, epoch = 0, verbose = 2):
         n_res, mean_ss3, mean_ss8, mean_box, mean_other, mean_loss, mean_ss3_acc, mean_ss8_acc = 0, 0, 0, 0, 0, 0, 0, 0
@@ -62,6 +73,9 @@ class BaseNet(nn.Module):
                  SS3 Loss: {mean_ss3:.3f} || SS8 Loss: {mean_ss8:.3f} || Other Loss: {mean_other:.3f}'''
                     , end="\r")
         m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
+        logs = {"train/ss3_acc": mean_ss3_acc, "train/ss8_acc" : mean_ss8_acc, "train/loss": mean_loss,
+                "train/ss3_loss": mean_ss3, "train/ss8_loss": mean_ss8, "train/other": mean_other}
+        self.write_tensorboard(logs, epoch)
         if verbose > 0:
             print(f'''Train Epoch: {epoch} [100%] || Time: {m} min {s}  || SS3 Acc: {mean_ss3_acc:.3f} || SS8 Acc \
             : {mean_ss8_acc:.3f} || Loss: {mean_loss:.3f} || SS3 Loss: {mean_ss3:.3f} || SS8 Loss: {mean_ss8:.3f} \
@@ -97,6 +111,9 @@ class BaseNet(nn.Module):
                     f'''Val Epoch: {epoch} [{int(100 * batch_idx / len(loader))}%] || Time: {m} min {s} || \
                     SS3 Acc: {mean_ss3_acc:.3f} || SS8 Acc: {mean_ss8_acc:.3f}''',
                     end="\r")
+
+        logs = {"val/ss3_acc": mean_ss3_acc, "val/ss8_acc" : mean_ss8_acc}
+        self.write_tensorboard(logs, epoch)
         m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
         if verbose > 0:
             print(
@@ -125,8 +142,8 @@ class BaseNet(nn.Module):
         return others, ss8, ss3
 
 class NetSurfP2(BaseNet):
-    def __init__(self, in_channels):
-        super(NetSurfP2, self).__init__(in_channels)
+    def __init__(self, in_channels, name):
+        super(NetSurfP2, self).__init__(in_channels, name)
         self.conv1 = ResBlock(in_channels, 32, 129)
         self.conv2 = ResBlock(32, 32, 257)
         self.lstm1 = nn.LSTM(input_size=32 + in_channels,
@@ -169,8 +186,8 @@ class NetSurfP2(BaseNet):
 
 class ConvNet(BaseNet):
 
-    def __init__(self, in_channels):
-        super(ConvNet, self).__init__(in_channels)
+    def __init__(self, in_channels, name):
+        super(ConvNet, self).__init__(in_channels, name)
         self.conv1 = ResBlock(in_channels, 200, 11)
         self.conv2 = ResBlock(200, 200, 11)
         self.conv3 = ResBlock(400, 200, 17)
@@ -202,8 +219,8 @@ class ConvNet(BaseNet):
 
 
 class HmmConvNet(BaseNet):
-    def __init__(self, in_channels):
-        super(HmmConvNet, self).__init__(in_channels)
+    def __init__(self, in_channels, name):
+        super(HmmConvNet, self).__init__(in_channels, name)
         self.conv1 = ResBlock(in_channels, 100, 11)
         self.conv2 = ResBlock(100, 200, 11)
         self.conv3 = ResBlock(200, 400, 11)

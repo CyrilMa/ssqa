@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from .utils import device
+from ..utils import device
 
 
 class Edge(nn.Module):
