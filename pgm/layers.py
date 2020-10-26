@@ -7,7 +7,7 @@ from torch.nn import functional as F
 from torch.distributions.one_hot_categorical import OneHotCategorical
 from torch.distributions.normal import Normal
 
-from ..utils import TNP, TNM
+from utils import TNP, TNM
 
 
 class Layer(nn.Module):

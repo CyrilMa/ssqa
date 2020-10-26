@@ -1,32 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="0181bba7-5666-4018-9f1a-3336ee67b6fd" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/notebooks/cm.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notebooks/cm_russ.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notebooks/ww.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pattern_matching/local.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data_extraction/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data_extraction/hmm_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data_extraction/patterns_extraction.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data_extraction/pfam_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data_extraction/sequence_extraction.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data_extraction/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/mutation_data.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/mutation_sequences.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/sampling_edca_PF00397.png" beforeDir="false" afterPath="$PROJECT_DIR$/img/sampling_edca_PF00397.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/sampling_ss_PF00397.png" beforeDir="false" afterPath="$PROJECT_DIR$/img/sampling_ss_PF00397.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/analysis.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/chorismate_mutase.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/dataviz.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/dataviz.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/full_track.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/full_track.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/build_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/cm.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/cm.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/cm_russ.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/cm_russ.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/rejection_dca_sampling.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/rejection_dca_sampling.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pattern_matching/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pattern_matching/data_extraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/data_extraction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/ww.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/ww.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pattern_matching/data_extraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_extraction/mutation_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pattern_matching/loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/loss.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pattern_matching/pattern.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/pattern.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pattern_matching/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pgm/edge.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/edge.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pgm/layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/layers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pgm/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pgm/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ss_inference/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/ss_inference/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ss_inference/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/ss_inference/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_rbm.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_rbm.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_ssinf.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ssinf.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,22 +67,25 @@
   </component>
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/ss_inference" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/data_extraction" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/data_extraction" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/pgm" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/data_extraction" />
       <recent name="$PROJECT_DIR$/ss_inference" />
       <recent name="$PROJECT_DIR$/pgm" />
       <recent name="$PROJECT_DIR$/pattern_matching" />
       <recent name="$PROJECT_DIR$" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/pgm" />
     </key>
   </component>
   <component name="RunManager">
@@ -141,15 +157,41 @@
       <workItem from="1602501590346" duration="3510000" />
       <workItem from="1602581184252" duration="9391000" />
       <workItem from="1602671314757" duration="5275000" />
-      <workItem from="1603096604343" duration="6743000" />
+      <workItem from="1603096604343" duration="14169000" />
+      <workItem from="1603279885282" duration="2397000" />
+      <workItem from="1603554372264" duration="2392000" />
+      <workItem from="1603703992213" duration="12637000" />
     </task>
+    <task id="LOCAL-00001" summary="Oct 19th">
+      <created>1603114844961</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1603114844961</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="Oct 19th" />
+    <option name="LAST_COMMIT_MESSAGE" value="Oct 19th" />
   </component>
   <component name="WindowStateProjectService">
     <state x="789" y="431" width="459" height="283" key="#Notifications" timestamp="1602084130487">
@@ -161,6 +203,10 @@
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
     <state x="2969" y="482" width="524" height="510" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/1920.0.2560.1440/0.27.1920.1053@1920.0.2560.1440" timestamp="1602862355220" />
+    <state x="2749" y="269" width="963" height="935" key="CommitChangelistDialog2" timestamp="1603114833470">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2749" y="269" width="963" height="935" key="CommitChangelistDialog2/1920.0.2560.1440/0.27.1920.1053@1920.0.2560.1440" timestamp="1603114833470" />
     <state width="498" height="447" key="SwitcherDM" timestamp="1602591864462">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>

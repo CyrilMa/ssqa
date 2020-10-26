@@ -9,8 +9,6 @@ from .utils import trace
 
 inf = float("Inf")
 
-inf = float("Inf")
-
 class Matching(object):
     def __init__(self, x):
         super(Matching, self).__init__()
@@ -48,18 +46,25 @@ class PatternMatching(nn.Module):
 
     def forward(self, m:Matching):
         batch_size = m.batch_size
+        m.len_pat = len(self.pattern)
         hmm, m.ls = self.hmm_(m)
         hmm = hmm.to(self.model_ss3.device)
-        m.ss3 = F.softmax(self.model_ss3(hmm)[2].cpu(),1)
-        m.P = self.P_(m.ss3).float()
+        m.ss3 = F.softmax(self.model_ss3(hmm)[2].cpu(),1).detach()+1e-3
+        m.P = self.P_(m).float()
         m.a = self.sum_alpha(m)
         m.b = self.sum_beta(m)
         m.ll = m.a + m.b
         m.M = m.a[torch.arange(batch_size), -1, m.ls]
         m.p = self.p_marginalize(m)
         m.t = self.t_marginalize(m)
-        m.l = self.l_marginalize(m)
+        m.L = self.l_marginalize(m)
         return m
+
+    def t_marginalize(self, m):
+        batch_size, len_pat, P, a, b, M = m.batch_size, m.len_pat, m.P, m.a, m.b, m.M
+        t = a[:, :-1].view(batch_size, len_pat,-1,1)+b[:, 1:].view(batch_size, len_pat,1,-1)+P[:, 0, self.pattern]+\
+            self.Q[:, 0, self.pattern] - M.view(batch_size, 1, 1, 1)
+        return t
 
     @staticmethod
     def p_marginalize(m):
@@ -67,18 +72,13 @@ class PatternMatching(nn.Module):
         p = a+b-M.view(batch_size, 1, 1)
         return p
 
-    def t_marginalize(self, m):
-        batch_size, len_pat, P, a, b, M = m.batch_size, m.len_pat, m.P, m.a, m.b, m.M
-        t = a[:, :-1].view(batch_size, len_pat-1,-1,1)+b[:, 1:].view(batch_size, len_pat-1,1,-1)+P[:, 0, self.pattern]+\
-            self.Q[:, 0, self.pattern]- M.view(batch_size, 1, 1, 1)
-        return t
-
     @staticmethod
     def l_marginalize(m, n = 30):
         batch_size, len_pat, t = m.batch_size, m.len_pat, m.t
         L = torch.zeros((batch_size, len_pat, n))
-        for j in range(30):
+        for j in range(n-1):
             L[:, :, j] = trace(torch.exp(t), offset=j)
+        L[:,:, -1] = 1-L.sum(-1)
         return L
 
     def sum_alpha(self, m):
@@ -132,9 +132,8 @@ class PatternMatching(nn.Module):
         ls = torch.tensor(ls)
         return hmm, ls
 
-    def P_(self, y):
-        C = torch.log(y)
-        batch_size = C.size(0)
+    def P_(self, m):
+        batch_size, C = m.batch_size, torch.log(m.ss3)
         P = torch.zeros(batch_size, 3, self.size + 1, self.size + 1)
         for i in range(self.size+1):
             P[:, :, i, :i + 1] = -inf

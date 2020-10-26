@@ -5,7 +5,7 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
 from .edge import Edge
-from ..utils import *
+from .utils import *
 from .graphic import draw_G
 
 DATA = '/home/malbranke/data'
