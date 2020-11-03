@@ -15,6 +15,7 @@ AMINO_ACIDS = AA = 'ACDEFGHIKLMNPQRSTVWY'
 AA_INDEX = AA_IDS = {k: i for i, k in enumerate(AA)}
 AA_MAT = None
 device = "cpu"
+DATA = "/home/malbranke/data/"
 
 # Dictionary to convert 'secStructList' codes to DSSP values
 # https://github.com/rcsb/mmtf/blob/master/spec.md#secstructlist

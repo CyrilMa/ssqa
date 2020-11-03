@@ -20,26 +20,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0181bba7-5666-4018-9f1a-3336ee67b6fd" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/data_extraction/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data_extraction/hmm_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data_extraction/patterns_extraction.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data_extraction/pfam_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data_extraction/sequence_extraction.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data_extraction/utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notebooks/mutation_data.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notebooks/mutation_sequences.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Q.pt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mut_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/L.pt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/M.pt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/Untitled.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/ls.pt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pattern_matching/inference.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pi.pt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/build_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/cm.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/cm.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_extraction/hmm_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_extraction/hmm_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_extraction/mutation_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_extraction/mutation_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_extraction/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_extraction/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/cm_russ.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/cm_russ.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/full_track.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/full_track.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/mutation_data.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/mutation_data.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/mutation_data_clean.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/pattern_matching.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/pattern_matching.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/rejection_dca_sampling.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/rejection_dca_sampling.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/ww.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/ww.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pattern_matching/data_extraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_extraction/mutation_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pattern_matching/local.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/pattern_matching/loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/loss.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pattern_matching/pattern.py" beforeDir="false" afterPath="$PROJECT_DIR$/pattern_matching/pattern.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pgm/edge.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/edge.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pgm/layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/layers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pgm/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/model.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,21 +72,21 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/data_extraction" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/pattern_matching" />
+      <recent name="$PROJECT_DIR$/data_extraction" />
+      <recent name="$PROJECT_DIR$/ss_inference" />
+      <recent name="$PROJECT_DIR$/pgm" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/data_extraction" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/pgm" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/data_extraction" />
-      <recent name="$PROJECT_DIR$/ss_inference" />
-      <recent name="$PROJECT_DIR$/pgm" />
-      <recent name="$PROJECT_DIR$/pattern_matching" />
-      <recent name="$PROJECT_DIR$" />
     </key>
   </component>
   <component name="RunManager">
@@ -160,7 +161,11 @@
       <workItem from="1603096604343" duration="14169000" />
       <workItem from="1603279885282" duration="2397000" />
       <workItem from="1603554372264" duration="2392000" />
-      <workItem from="1603703992213" duration="12637000" />
+      <workItem from="1603703992213" duration="26538000" />
+      <workItem from="1603879752028" duration="5621000" />
+      <workItem from="1603969829939" duration="5200000" />
+      <workItem from="1604313267157" duration="8658000" />
+      <workItem from="1604410857408" duration="14460000" />
     </task>
     <task id="LOCAL-00001" summary="Oct 19th">
       <created>1603114844961</created>

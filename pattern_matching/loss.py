@@ -37,3 +37,8 @@ class LocalPatternMatchingLoss(PatternMatching):
         m.t = self.t_marginalize(m)
         m.L = self.l_marginalize(m,n)
         return m.L
+
+
+def train_kernel(model, loader, savepath, ):
+    #TODO
+    return

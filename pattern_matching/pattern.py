@@ -44,12 +44,16 @@ class PatternMatching(nn.Module):
     def __repr__(self):
         return self.name
 
-    def forward(self, m:Matching):
+    def forward(self, m:Matching, m_pat = None, M_pat = None):
         batch_size = m.batch_size
         m.len_pat = len(self.pattern)
         hmm, m.ls = self.hmm_(m)
         hmm = hmm.to(self.model_ss3.device)
         m.ss3 = F.softmax(self.model_ss3(hmm)[2].cpu(),1).detach()+1e-3
+        if m_pat is not None:
+            m.ls = m.ls * 0 + (M_pat-m_pat)
+            m.ss3[:, :, :M_pat-m_pat] = m.ss3[:,:,m_pat: M_pat]
+            m.ss3[:, :, M_pat - m_pat:] = 1e-3
         m.P = self.P_(m).float()
         m.a = self.sum_alpha(m)
         m.b = self.sum_beta(m)
@@ -180,5 +184,4 @@ def set_const(dataset, max_size=400):
     Q = Q.reshape(1, *Q.shape)
     pickle.dump((Q, T, pi), open(f"statistics.pkl", "wb"))
     return Q, T, pi
-
 

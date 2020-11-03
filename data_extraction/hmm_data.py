@@ -99,9 +99,11 @@ def vectorize_profile(profile,
     return profmat
 
 
-def build_profiles(folder, prefix = ""):
+def build_profiles(folder, prefix = "", idxs = None):
     with open(f"{folder}/{prefix}aligned.fasta") as f:
         protlist = nsp2.parse_fasta(f)
+    if idxs is not None:
+        protlist = {k:v for i,(k,v) in enumerate(protlist.items()) if i in idxs}
     hhm_name = f"{folder}/aligned.hhm"
     dataset = dict()
     for k, (_, v) in tqdm(protlist.items()):
