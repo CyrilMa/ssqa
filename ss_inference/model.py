@@ -3,14 +3,24 @@ from tqdm import tqdm
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
+from torch.utils.data import DataLoader
 from torch import nn
 from torch.nn import functional as F
+from torch.optim.optimizer import Optimizer
 
 from .layers import ResBlock, ConvBlock
 
 DATA = '/home/malbranke/data'
 
 class BaseNet(nn.Module):
+    r"""
+    Base class for Secondary Structure Inference Network
+
+    Args:
+        in_channels (int): number of input channels
+        name (str): name of the network (change for each experiment)
+    """
+
     def __init__(self, in_channels, name):
         super(BaseNet, self).__init__()
         self.in_channels = in_channels
@@ -30,11 +40,27 @@ class BaseNet(nn.Module):
         pass
 
     def write_tensorboard(self, logs, n_iter):
+        r"""
+
+        Args:
+            logs (dict): data to write in Tensorboard, name of the metric in key, value in value
+            n_iter (int): number of te iteration to write Z
+        """
         for k, v in logs.items():
             self.writer.add_scalar(k, v, n_iter)
 
     def train_epoch(self, loader, optimizer, epoch = 0, verbose = 2):
-        n_res, mean_ss3, mean_ss8, mean_box, mean_other, mean_loss, mean_ss3_acc, mean_ss8_acc = 0, 0, 0, 0, 0, 0, 0, 0
+        r"""
+        Train through one epoch
+
+        Args:
+            loader (DataLoader): Loader for training data
+            optimizer (Optimizer): Optimizer to use
+            epoch (int): number of the epoch
+            verbose (int): 0 = silence | 1 = One print per iteration | 2 = One return per iteration
+
+        """
+        n_res, mean_ss3, mean_ss8, mean_box, mean_other, mean_loss, mean_ss3_acc, mean_ss8_acc = 0., 0., 0., 0., 0., 0., 0., 0.
         start = time.time()
         self.train()
         for batch_idx, (x, t, is_empty) in enumerate(loader):
@@ -83,7 +109,17 @@ class BaseNet(nn.Module):
         return mean_ss3_acc, mean_ss8_acc, mean_loss, mean_ss3, mean_ss8
 
     def val_epoch(self, loader, epoch = 0, verbose = 2):
-        mean_ss3_acc, mean_ss8_acc, n_res = 0, 0, 0
+        r"""
+        Validation through one epoch
+
+        Args:
+            loader (DataLoader): Loader for training data
+            epoch (int): number of the epoch
+            verbose (int): 0 = silence | 1 = One print per iteration | 2 = One return per iteration
+
+        """
+
+        mean_ss3_acc, mean_ss8_acc, n_res = 0., 0., 0.
         start = time.time()
         self.eval()
         for batch_idx, (x, t, is_empty) in enumerate(loader):
@@ -122,6 +158,14 @@ class BaseNet(nn.Module):
         return mean_ss3_acc, mean_ss8_acc
 
     def predict(self, loader):
+        r"""
+        Predict all data in a Data Loader
+
+        Args:
+            loader (DataLoader): Loader for training data
+
+        """
+
         self.eval()
         ss3, ss8, others = [], [],[]
         for batch_idx, (x,t, is_empty) in tqdm(enumerate(loader)):
@@ -142,6 +186,17 @@ class BaseNet(nn.Module):
         return others, ss8, ss3
 
 class NetSurfP2(BaseNet):
+    r"""
+    Model strongly derived from the NetSurfP2 model below
+
+    Klausen, Michael Schantz, et al. "NetSurfP‐2.0: Improved prediction of protein structural features by integrated
+    deep learning." Proteins: Structure, Function, and Bioinformatics 87.6 (2019): 520-527.
+
+    Args:
+        in_channels (int): number of input channels
+        name (str): name of the network (change for each experiment)
+    """
+
     def __init__(self, in_channels, name):
         super(NetSurfP2, self).__init__(in_channels, name)
         self.conv1 = ResBlock(in_channels, 32, 129)
@@ -168,6 +223,11 @@ class NetSurfP2(BaseNet):
                                   stride=1, padding=0, dilation=1)
 
     def forward(self, x, is_empty=None):
+        r"""
+        Args:
+            x (torch.FloatTensor): Input, dim = [batch_size, n_channels, N]
+            is_empty  (torch.FloatTensor): Recomputed if None, dim = [batch_size, 1, N]
+        """
         B, _, N = x.size()
         if is_empty is None:
             is_empty = (x.max(1).values != 0).int().view(B, 1, N)
@@ -185,6 +245,14 @@ class NetSurfP2(BaseNet):
 
 
 class ConvNet(BaseNet):
+    r"""
+    Simple Light Convolutional model that reach 80% accuracy on SS3
+
+    Args:
+        in_channels (int): number of input channels
+        name (str): name of the network (change for each experiment)
+    """
+
 
     def __init__(self, in_channels, name):
         super(ConvNet, self).__init__(in_channels, name)
@@ -203,9 +271,15 @@ class ConvNet(BaseNet):
                                   100, 3, 1,
                                   stride=1, padding=0, dilation=1)
 
-    def forward(self, x):
+    def forward(self, x, is_empty=None):
+        r"""
+        Args:
+            x (torch.FloatTensor): Input, dim = [batch_size, n_channels, N]
+            is_empty  (torch.FloatTensor): Recomputed if None, dim = [batch_size, 1, N]
+        """
         B, _, N = x.size()
-        is_empty = (x.max(1).values != 0).int().view(B, 1, N)
+        if is_empty is None:
+            is_empty = (x.max(1).values != 0).int().view(B, 1, N)
         h_1 = h =self.conv1(x)
         h_2 = self.conv2(h)
         h = torch.cat([h_2, h_1], 1)
@@ -217,27 +291,5 @@ class ConvNet(BaseNet):
         h_ss3 = self.conv_ss3(h) * is_empty
         return h_other, h_ss8, h_ss3
 
-
-class HmmConvNet(BaseNet):
-    def __init__(self, in_channels, name):
-        super(HmmConvNet, self).__init__(in_channels, name)
-        self.conv1 = ResBlock(in_channels, 100, 11)
-        self.conv2 = ResBlock(100, 200, 11)
-        self.conv3 = ResBlock(200, 400, 11)
-        self.conv4 = ResBlock(400, 200, 11)
-        self.conv_ss3 = ConvBlock(nn.Conv1d, None, None,
-                                  200, 3, 1,
-                                  stride=1, padding=0, dilation=1)
-
-    def forward(self, x):
-        B, _, N = x.size()
-        is_empty = (x.max(1).values != 0).int().view(B, 1, N)
-
-        h = self.conv1(x)
-        h = self.conv2(h)
-        h = self.conv3(h)
-        h = self.conv4(h)
-        h_ss3 = self.conv_ss3(h) * is_empty
-        return None, None, h_ss3
 
 

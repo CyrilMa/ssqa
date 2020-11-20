@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from ss_inference.data import SecondaryStructureRawDataset, collate_sequences
 from ss_inference.model import NetSurfP2
 
-from data_extraction.pfam_data import *
+from data.pfam_data import *
 from config import *
 
 parser = argparse.ArgumentParser()

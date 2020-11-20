@@ -1,8 +1,10 @@
+import sys, os
+sys.path.append(os.path.dirname(os.getcwd()))
+
 import torch
 from torch import nn
 
 from utils import device
-
 
 class Edge(nn.Module):
     r"""

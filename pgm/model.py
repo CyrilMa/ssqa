@@ -1,11 +1,15 @@
+import sys, os
+sys.path.append(os.path.dirname(os.getcwd()))
+
 import time
 import networkx as nx
 
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
+from utils import *
+
 from .edge import Edge
-from .utils import *
 from .graphic import draw_G
 
 DATA = '/home/malbranke/data'

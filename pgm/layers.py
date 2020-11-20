@@ -1,3 +1,6 @@
+import sys, os
+sys.path.append(os.path.dirname(os.getcwd()))
+
 import math
 
 import torch

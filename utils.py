@@ -6,7 +6,7 @@ import torch
 from torch.nn import functional as F
 
 I = (lambda x: x)
-LAYERS_NAME = ["sequence", "pattern_matching", "transitions"]
+LAYERS_NAME = ["sequence", "structure", "transitions"]
 PROFILE_HEADER = ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
                   'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y',
                   'M->M', 'M->I', 'M->D', 'I->M', 'I->I',
@@ -28,7 +28,7 @@ sec_struct_codes = {0: "I",
                     7: "C"}
 
 abc_codes = {"a": 0, "b": 1, "c": 2}
-# Converter for the DSSP secondary pattern_matching elements
+# Converter for the DSSP secondary pattern elements
 # to the classical ones
 dssp_to_abc = {"I": "c",
                "S": "c",

@@ -1,3 +1,4 @@
 DATASET = "PF07736"
 DATA = "/home/malbranke/data"
-ROOT = "/home/malbranke/protein_models" 
+MUTDATA = "/home/malbranke/mut_data"
+ROOT = "/home/malbranke/protein_models"
