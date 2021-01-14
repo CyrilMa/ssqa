@@ -20,88 +20,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0181bba7-5666-4018-9f1a-3336ee67b6fd" name="Default Changelist" comment="Oct 19th">
-      <change afterPath="$PROJECT_DIR$/generation/rejection.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notebooks/Beta-lactamase Ecoli .ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notebooks/Chorismate Mutase - Russ et al. 2020.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notebooks/Chorismate Mutases.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notebooks/Data Visualisation.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notebooks/RBM Sampling With SSQA.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notebooks/Tutorials.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notebooks/Visualisation Mutational Datasets.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ssqa/dotproduct.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ssqa/ssqa.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Q.pt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/build_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/data_structure.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/data_structure.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/hmm_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/hmm_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/mutation_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/mutation_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/patterns_extraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/patterns_extraction.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sequence_extraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/sequence_extraction.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/confusion_matrix.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/distribution.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/edca_of_gt.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/edca_of_qa.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/roc.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/roc_edca25.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/roc_edca50.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/roc_pr.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/sampling_edca_PF00397.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/sampling_edca_PF07736.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/sampling_ss_PF00397.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/sampling_ss_PF07736.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/struc_qa_of_gt.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/swarm.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/violin.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/meg/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/generation/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/meg/meg.py" beforeDir="false" afterPath="$PROJECT_DIR$/generation/meg.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/meg/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/generation/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mut_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/mut_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nohup.out" beforeDir="false" afterPath="$PROJECT_DIR$/nohup.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/Untitled.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/Untitled.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/cm.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/cm_russ.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/dataviz.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/deep_protein_generation.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/deep_protein_generation.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/full_track.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/full_track.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/pattern_matching.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/rejection_dca_sampling.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/sec_structure_pred.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/ww.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/ww.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pattern/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ssqa/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pattern/graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/ssqa/graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pattern/inference.py" beforeDir="false" afterPath="$PROJECT_DIR$/ssqa/inference.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pattern/pattern.py" beforeDir="false" afterPath="$PROJECT_DIR$/ssqa/pattern.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pgm/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pgm/graphic.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/graphic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pgm/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pi.pt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/ChorismateMutase.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/GenerationWithSS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/Untitled.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/distribution.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/edca_of_gt.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/edca_of_qa.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/reject_sampling_edca.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/reject_sampling_ss.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/roc.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/roc_edca25.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/roc_edca50.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/roc_pr.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/sampling_edca.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/sampling_ss.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/struc_qa_of_gt.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/swarm.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reports/img/violin.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ss_inference/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/ss_inference/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_rbm.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_rbm.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_ssinf.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ssinf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/constants.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/lcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/lcs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -268,7 +190,7 @@
       <workItem from="1610318715225" duration="781000" />
       <workItem from="1610359827453" duration="5639000" />
       <workItem from="1610536964832" duration="3936000" />
-      <workItem from="1610626917528" duration="2293000" />
+      <workItem from="1610626917528" duration="3886000" />
     </task>
     <task id="LOCAL-00001" summary="Oct 19th">
       <created>1603114844961</created>
