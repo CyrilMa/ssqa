@@ -4,55 +4,48 @@ import pickle
 import torch
 from torch.utils.data import Dataset
 
-import numpy as np
-import pickle
+class SSQAData(Dataset):
+    def __init__(self, file, subset=None):
+        super(SSQAData, self).__init__()
+        data = torch.load(file)
+        keys = list(data.keys())
+        print("Available : ", *keys)
+        if subset is not None:
+            idx = data["subset"][subset]
+        else:
+            idx = torch.arange(data["L"])
+        self.L = len(idx)
 
-from torch.utils.data import Dataset
+        self.seqs = data["seq"][idx] if "seq" in keys else None
+        self.ss3 = data["ss3"][idx] if "ss3" in keys else None
+        self.ss8 = data["ss8"][idx] if "ss8" in keys else None
+        self.others = data["others"] if "others" in keys else None
+        self.weights = data["weights"][idx] if "weights" in keys else None
 
-class RBMSequenceStructureData(Dataset):
+        self.seq_hmm = data["seq_hmm"] if "seq_hmm" in keys else None
+        self.ss_hmm = data["ss_hmm"] if "ss_hmm" in keys else None
 
-    def __init__(self, path, dataset="full"):
-        super(RBMSequenceStructureData, self).__init__()
-        self.raw_sequences, self.ss_sequences, self.ss_transitions, self.hmms = pickle.load(open(f"{path}/rbm_data.pkl", "rb"))
-        self.weights = np.array(pickle.load(open(f"{path}/weights.pkl", "rb")))
-
-        if dataset != "full":
-            idx = np.array(pickle.load(open(f"{path}/is_val.pkl", "rb")))
-            if dataset == "train":
-                idx = 1 - idx
-            idx = np.array(idx, dtype=bool)
-            self.raw_sequences, self.ss_sequences, self.ss_transitions, self.hmms = \
-                self.raw_sequences[idx], self.ss_sequences[idx], self.ss_transitions[idx], self.hmms[idx]
-            self.weights = np.ones(*self.weights[idx].shape)
-
-    def __len__(self):
-        return len(self.raw_sequences)
-
-    def __getitem__(self, i):
-        return self.raw_sequences[i], self.ss_sequences[i], self.ss_transitions[i], self.hmms[i], self.weights[i]
-
-class RBMSequenceData(Dataset):
-
-    def __init__(self, path, dataset="full"):
-        super(RBMSequenceData, self).__init__()
-        self.raw_sequences, self.ss_sequences, self.ss_transitions, self.hmms = pickle.load(open(f"{path}/rbm_data.pkl", "rb"))
-        self.weights = np.array(pickle.load(open(f"{path}/weights.pkl", "rb")))
-
-        if dataset != "full":
-            idx = np.array(pickle.load(open(f"{path}/is_val.pkl", "rb")))
-            if dataset == "train":
-                idx = 1 - idx
-            idx = np.array(idx, dtype=bool)
-            self.raw_sequences, self.hmms = \
-                self.raw_sequences[idx], self.hmms[idx]
-            self.weights = np.ones(*self.weights[idx].shape)
+        self.c_pattern3, self.n_pattern3, self.c_pattern8, self.n_pattern8 = data["pattern"] if "pattern" in keys else (None,None,None,None)
 
     def __len__(self):
-        return len(self.raw_sequences)
+        return self.L
 
     def __getitem__(self, i):
-        return self.raw_sequences[i], [], [], self.hmms[i], self.weights[i]
+        pass
 
+class SSQAData_SSinf(SSQAData):
+    def __getitem__(self, i):
+        idx = torch.where(self.seqs[i].sum(0)>0)[0]
+        return torch.cat([self.seqs[i][:,idx], self.seq_hmm[:,idx]], 0)
+
+class SSQAData_QA(SSQAData):
+    def __getitem__(self, i):
+        return torch.cat([self.seqs[i], self.seq_hmm], 0)
+
+class SSQAData_RBM(SSQAData):
+    def __getitem__(self, i):
+        gaps = (self.seqs[i].sum(0) == 0).int()
+        return torch.cat([gaps[None], self.seqs[i]], 0), self.weights[i]
 
 class SecondaryStructureAnnotatedDataset(Dataset):
     r"""
@@ -66,13 +59,11 @@ class SecondaryStructureAnnotatedDataset(Dataset):
             file (str): path to HMM file
             nfeats (int): number of feats to keep in the hmm profile
         """
-        data = pickle.load(open(file, 'rb'))
-        self.input_data = [p[:, :nfeats] for p, _ in data.values()]
-        self.target = [np.concatenate((p[:, 51:57],
-                                       p[:, 65:],
-                                       np.argmax(p[:, 57:65], 1).reshape(p.shape[0], 1),
-                                       np.array(s).reshape(len(s), 1)), axis=1) for p, s in data.values()]
-        del data
+        data = torch.load(file)
+        self.input_data = [x[:, :nfeats] for x in data]
+        ss8 = [x[:, 57:65].argmax(1) for x in data]
+        ss3 = [(2*((x==5) | (x==6) | (x==7)).int() + ((x==3) | (x==4)).int()) for x in ss8]
+        self.target = [torch.cat([x[:, 51:57],x[:, 65:],s8[:,None],s3[:,None]],1) for (x,s8,s3) in zip(data,ss8, ss3)]
 
     def __len__(self):
         return len(self.input_data)
@@ -80,40 +71,31 @@ class SecondaryStructureAnnotatedDataset(Dataset):
     def __getitem__(self, i: int):
         return self.input_data[i], self.target[i]
 
-
-class SecondaryStructureRawDataset(Dataset):
-    r"""
-    Dataset structure without annotation for training.
-    """
-
-    def __init__(self, file: str, nfeats: int = 50):
-        r"""
-
-        Args:
-            file (str): path to HMM file
-            nfeats (int): number of feats to keep in the hmm profile
-        """
-        data = pickle.load(open(file, 'rb'))
-        self.primary = [p[:, :nfeats] for p in data.values()]
-
-    def __len__(self):
-        return len(self.primary)
-
-    def __getitem__(self, i):
-        return self.primary[i], None
-
-
-
-
-
-
 def collate_sequences(data):
     r"""
     Append sequences of different size together.
-
     Args:
         data (list of tuples): iterator of sequences and targetted values (None if prediction task)
+    """
+    batch_size = len(data)
+    feats = data[0].shape[-1]
+    lengths = []
+    for x in data:
+        lengths.append(len(x))
 
+    max_length = max(lengths)
+    primary = torch.zeros(batch_size, max_length, feats)
+    for i, (x, l) in enumerate(zip(data, lengths)):
+        primary[i, :l] = torch.tensor(x)
+    is_empty = (primary.max(-1).values != 0).int().view(*primary.size()[:-1], 1)
+    return primary, is_empty
+
+
+def collate_sequences_train(data):
+    r"""
+    Append sequences of different size together.
+    Args:
+        data (list of tuples): iterator of sequences and targetted values (None if prediction task)
     """
     batch_size = len(data)
     _, feats = data[0][0].shape

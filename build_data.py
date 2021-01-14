@@ -5,11 +5,12 @@ from tqdm import tqdm
 
 from torch.utils.data import DataLoader
 
-from ss_inference.data import SecondaryStructureRawDataset, collate_sequences
-from ss_inference.model import NetSurfP2
-
-from data.pfam_data import *
+from ss_inference import NetSurfP2
+from data import *
 from config import *
+from utils import *
+
+DATA = PFAM_DATA
 
 parser = argparse.ArgumentParser()
 parser.add_argument("dataset", help="name of the dataset to compute data ")
@@ -19,7 +20,7 @@ DATASET = args.dataset
 STEPS = args.steps
 
 if "1" in STEPS:
-    extract_data(f"{DATA}/{DATASET}", "full.fasta")
+    pfam_data(f"{DATA}/{DATASET}", "full.fasta")
 
 if "2" in STEPS:
     structfam = get_structures(DATA, DATASET)

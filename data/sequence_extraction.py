@@ -5,7 +5,6 @@ import pandas as pd
 import pickle
 
 from random import shuffle
-from pattern.utils import *
 
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -41,6 +40,16 @@ def from_fasta_to_df(folder, file, chunksize=5000):
     df["length"] = df.seq.apply(lambda seq: len(seq))
     df.to_csv(f"{folder}/sequences.csv", mode="a", header=False)
 
+def from_df_to_data(folder, file, prefix=""):
+    df = pd.read_csv(file, index_col=0)
+    N = len(df.aligned_seq.values[0])
+    all_seqs = torch.zeros(len(df), 20, N)
+    for i, x in enumerate(df.aligned_seq.values):
+        x_ = torch.tensor([AA_IDS.get(aa, 20) for aa in x])
+        x_ = torch.tensor(to_onehot(x_, (None, 21)))
+        all_seqs[i] = x_.t()[:-1]
+    data = {"seq": all_seqs, "L":len(df)}
+    torch.save(data, f"{folder}/{prefix}data.pt")
 
 def from_df_to_fasta(folder, file, chunksize=5000, prefix = ""):
     df_iter = pd.read_csv(file, index_col=0, chunksize=chunksize)
@@ -60,7 +69,9 @@ def from_df_to_fasta(folder, file, chunksize=5000, prefix = ""):
 def build_protein_df(folder, filename, chunksize=5000):
     file = f"{folder}/{filename}"
     print("building sequences.csv")
-    from_fasta_to_df(folder, file, chunksize=chunksize)
+    #from_fasta_to_df(folder, file, chunksize=chunksize)
+    print("building data.pt")
+    from_df_to_data(folder, f"{folder}/sequences.csv")
     print("building aligned.fasta, unaligned.fasta ...")
     from_df_to_fasta(folder, f"{folder}/sequences.csv", chunksize=chunksize)
 
@@ -71,8 +82,8 @@ def cluster_weights(folder):
     clusters = pd.read_table(f"{folder}/tmp/clusters.tsv_cluster.tsv", names=["cluster", "id"]).set_index("id").cluster
     cluster_weights = 1 / clusters.value_counts()
     weights = [cluster_weights[c] for c in clusters]
-    pickle.dump(list(clusters.index), open(f"{folder}/index.pkl", "wb"))
-    pickle.dump(list(weights), open(f"{folder}/weights.pkl", "wb"))
+    push(f"{folder}/data.pt", "cluster_index", list(clusters.index))
+    push(f"{folder}/data.pt", "weights", torch.tensor(list(weights)))
     return pd.Series(data=weights, index=clusters.index)
 
 
@@ -87,6 +98,9 @@ def split_train_val_set(folder, ratio=0.1):
         val += list(clusters[clusters == c].index)
         if len(val) > max_size:
             break
-    is_val = [int(c in val) for c in clusters.index]
-    pickle.dump(is_val, open(f"{folder}/is_val.pkl", "wb"))
+    is_val = torch.tensor([int(c in val) for c in clusters.index])
+    subset = dict()
+    subset["val"] = torch.where(is_val == 1)[0]
+    subset["train"] = torch.where(is_val == 0)[0]
+    push(f"{folder}/data.pt", "subset", subset)
     return pd.Series(data=is_val, index=clusters.index)

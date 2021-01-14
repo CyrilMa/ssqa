@@ -1,453 +1,161 @@
 import pandas as pd
 import os, re, subprocess
 import warnings
-import numpy as np
-import pickle
-from tqdm import tqdm
 
-import torch
-from torch.utils.data import DataLoader
-
-from data import build_profiles
 from data.mutation_data import run_family, run_dataset
 
-from ss_inference.data import SecondaryStructureRawDataset, collate_sequences
-from ss_inference.model import NetSurfP2
+from ss_inference import NetSurfP2
 
-from pattern.pattern import Matching, PatternMatching, PatternWithoutMatching
-from pattern.inference import PatternMatchingInference
+from ssqa import *
 
 from scipy.stats import spearmanr, rankdata
-from sklearn.svm import SVR
 from sklearn.model_selection import KFold
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
 
 from config import *
 warnings.filterwarnings("ignore")
-PATH = "/home/malbranke/mutation_data"
+PATH = "/home/malbranke/data/mut"
+
 
 def build_family(fam, uniprotid):
     print(f"Starting with family {fam} (Uniprot ID : {uniprotid})")
-    pattern, ratio_covered = run_family(PATH, fam, uniprotid)
+    _, _ = run_family(PATH, fam, uniprotid)
     print("Success")
     return
 
-def cv_spearmanr(X, y, N = 5):
+
+def best_temperature(X, y):
+    e, dpunsup, pmunsup, dpsup, pmsup = X
+    clf = LinearRegression(fit_intercept=False)
+    clf.fit(torch.cat([e[:, None], dpunsup[:, None], pmunsup[:, None]], 1), y)
+    a, b, c = clf.coef_[0], clf.coef_[1], clf.coef_[2]
+    if a < 0:
+        Wunsup = 0, -b / a, -c / a
+    else:
+        Wunsup = 1, b / a, c / a
+    clf.fit(torch.cat([e[:, None], dpsup[:, None], pmsup[:, None]], 1), y)
+    a, b, c = clf.coef_[0], clf.coef_[1], clf.coef_[2]
+    if a < 0:
+        Wsup = 0, -b / a, -c / a
+    else:
+        Wsup = 1, b / a, c / a
+    return Wunsup, Wsup
+
+
+def cv_spearmanr(ssqa, edca, dp, pm, y, N=5):
     cv = KFold(n_splits=N, shuffle=True)
-    pred = np.zeros(len(y))
-    all_ = 0
-    for i, (train_index, test_index) in enumerate(cv.split(X)):
-        clf = RandomForestRegressor(50)
-        #clf = SVR()
-        X_train, X_test = X[train_index], X[test_index]
-        y_train, y_test = y[train_index], y[test_index]
-        clf.fit(X_train, y_train)
-        pred[test_index] = clf.predict(X_test)
-        all_ += np.abs(spearmanr(y_test, clf.predict(X_test))[0])
-    return all_/N
+    rho_scores = {"E": 0, "sup/DP": 0, "sup/PM": 0, "sup/PM+DP": 0, "sup/E+DP": 0, "sup/E+PM": 0, "sup/E+DP+PM": 0,
+                  "unsup/DP": 0, "unsup/PM": 0, "unsup/PM+DP": 0, "unsup/E+DP": 0, "unsup/E+PM": 0, "unsup/E+DP+PM": 0}
+    for i, (train_index, test_index) in enumerate(cv.split(edca)):
+        ssqa.train(dp[train_index], pm[train_index], y[train_index])
+        e = torch.tensor(edca[test_index])
+        dpunsup, pmunsup, dpsup, pmsup = ssqa.predict(dp[test_index], pm[test_index])
+        y_test = y[test_index]
+        (wu_e, wu_dp, wu_pm), (ws_e, ws_dp, ws_pm) = best_temperature(
+            [e, dpunsup, pmunsup, dpsup, pmsup], y_test)
 
-def interpolate(X, V, y, N=5):
-    cv = KFold(n_splits=N, shuffle=True)
-    all_ = 0
-    t_ = []
-    for i, (train_index, test_index) in enumerate(cv.split(X)):
-        clf1 = RandomForestRegressor(50)
-        clf2 = RandomForestRegressor(50)
+        rho_scores["E"] += np.abs(spearmanr(y_test, e)[0]) / N
 
-        #clf1 = SVR()
-        #clf2 = SVR()
+        rho_scores["sup/DP"] += np.abs(spearmanr(y_test, dpsup)[0]) / N
+        rho_scores["sup/PM"] += np.abs(spearmanr(y_test, pmsup)[0]) / N
+        rho_scores["sup/PM+DP"] += np.abs(spearmanr(y_test, ws_dp * dpsup + ws_pm * pmsup)[0]) / N
+        rho_scores["sup/E+DP"] += np.abs(spearmanr(y_test, ws_e * e + ws_dp * dpsup)[0]) / N
+        rho_scores["sup/E+PM"] += np.abs(spearmanr(y_test, ws_e * e + ws_pm * pmsup)[0]) / N
+        rho_scores["sup/E+DP+PM"] += np.abs(spearmanr(y_test, ws_e * e + ws_dp * dpsup + ws_pm * pmsup)[0]) / N
 
-        X_train, X_test = X[train_index], X[test_index]
-        V_train, V_test = V[train_index], V[test_index]
-        y_train, y_test = y[train_index], y[test_index]
-        clf1.fit(X_train, y_train)
-        pred_X = clf1.predict(X_train)
-        clf2.fit(V_train, y_train)
-        pred_V = clf2.predict(V_train)
-        spears = np.abs(np.array([spearmanr(y_train, t*pred_X + (1-t)*pred_V)[0] for t in np.arange(0,1.01,0.01)]))
-        t_.append(spears.argmax()/100)
-        t = t_[-1]
-        pred_X = clf1.predict(X_test)
-        pred_V = clf2.predict(V_test)
-        all_ += spearmanr(y_test, t*pred_X + (1-t)*pred_V)[0]
-    return all_/N, np.median(np.array(t_))
+        rho_scores["unsup/DP"] += np.abs(spearmanr(y_test, dpunsup)[0]) / N
+        rho_scores["unsup/PM"] += np.abs(spearmanr(y_test, pmunsup)[0]) / N
+        rho_scores["unsup/PM+DP"] += np.abs(spearmanr(y_test, wu_dp * dpunsup + wu_pm * pmunsup)[0]) / N
+        rho_scores["unsup/E+DP"] += np.abs(spearmanr(y_test, wu_e * e + ws_dp * dpunsup)[0]) / N
+        rho_scores["unsup/E+PM"] += np.abs(spearmanr(y_test, wu_e * e + ws_pm * pmunsup)[0]) / N
+        rho_scores["unsup/E+DP+PM"] += np.abs(spearmanr(y_test, wu_e * e + wu_dp * dpunsup + wu_pm * pmunsup)[0]) / N
+    return rho_scores
+
 
 def build_metrics():
     meta_df = pd.read_excel(f"{PATH}/meta.xlsx", index_col=0)
-
+    rho_df = pd.DataFrame(columns=["fam", "dataset", "exp", "uniprotid", "inpdb", "length", "size", "ind/E",
+                                   "ind/sup/DP", "ind/sup/PM", "ind/sup/PM+DP", "ind/sup/E+DP", "ind/sup/E+PM",
+                                   "ind/sup/E+DP+PM",
+                                   "ind/unsup/DP", "ind/unsup/PM", "ind/unsup/PM+DP", "ind/unsup/E+DP",
+                                   "ind/unsup/E+PM", "ind/unsup/E+DP+PM", "dca/E",
+                                   "dca/sup/DP", "dca/sup/PM", "dca/sup/PM+DP", "dca/sup/E+DP", "dca/sup/E+PM",
+                                   "dca/sup/E+DP+PM",
+                                   "dca/unsup/DP", "dca/unsup/PM", "dca/unsup/PM+DP", "dca/unsup/E+DP",
+                                   "dca/unsup/E+PM", "dca/unsup/E+DP+PM"
+                                   ])
+    rho_df.to_csv(f"{PATH}/rho_df.csv")
     for metadata in meta_df.itertuples():
         family = metadata.family
         name_dataset = metadata.dataset
         uniprotid = metadata.uniprot
         in_pdb = metadata.in_PDB
         exp_columns = re.findall(r"\w\w*", metadata.exp_columns)
-
         print(f"Family : {family}")
         print(f"Dataset : {name_dataset}")
         print(f"Uniprot ID : {uniprotid}")
         print(f"Experimental Columns : {exp_columns}")
         print()
-        directory = os.listdir(f"{PATH}/{family}")
-        if f"{family}.fasta" not in directory or f"{family}_{name_dataset}.csv" not in directory:
-            print("Missing files")
-        if "aligned.hhm" not in directory or "patterns.pkl" not in directory:
-            build_family(family, uniprotid)
-        if f"{name_dataset}_hmm.pkl" not in directory:
-            run_dataset(PATH, family, name_dataset)
         try:
-
-            dataset = SecondaryStructureRawDataset(f"{PATH}/{family}/hmm.pkl")
-            model_ss3 = NetSurfP2(50, "nsp2")
-            model_ss3 = model_ss3.to("cuda")
-            model_ss3.load_state_dict(torch.load(f"{DATA}/secondary_structure/lstm_50feats.h5"))
-            x = torch.tensor(dataset[0][0])[None].permute(0, 2, 1).float().cuda()
-            ss_hmm = model_ss3(x)[2][0].detach().cpu()
-            seq_hmm = torch.tensor(dataset[0][0]).t()[20:]
-            size = seq_hmm.size(-1)
-
-            n_pattern, c_pattern, m_pat, M_pat = pickle.load(open(f"{PATH}/{family}/patterns.pkl", "rb"))
-            Q = np.ones((3, size + 1, size + 1)) * (-np.inf)
-            for i in range(size + 1):
-                Q[:3, i, i + 1:] = 0
-            Q = Q.reshape(1, *Q.shape)
-            regex = ([(i, None, None) for i in n_pattern])
-
-
-            dataset = SecondaryStructureRawDataset(f"{PATH}/{family}/{name_dataset}_hmm.pkl")
-            loader = DataLoader(dataset, batch_size=16,
-                                shuffle=False, drop_last=False, collate_fn=collate_sequences)
-
-
-            matcher1 = PatternMatching(model_ss3, pattern = regex, Q=Q,
-                                      seq_hmm=seq_hmm, ss_hmm=None,
-                                      size=size, name= c_pattern)
-            matcher2 = PatternWithoutMatching(model_ss3, pattern=regex, Q=Q,
-                                             seq_hmm=seq_hmm, ss_hmm=ss_hmm,
-                                             size=size, name=c_pattern)
-
-            ls, L, V = [], [], []
-            for batch_idx, data in tqdm(enumerate(loader)):
-                x = data[0].permute(0, 2, 1).float()
-                m = Matching(x)
-                matcher1(m)
-                v = matcher2(m)
-                L.append(m.L), ls.append(m.ls), V.append(v)
-                del m
-                torch.cuda.empty_cache()
-            ls, V, L = torch.cat(ls, 0), torch.cat(V, 0), torch.cat(L, 0)
-            L = L.clamp(1e-8,1)
-            mut_df = pd.read_csv(f"{PATH}/{family}/{name_dataset}_mutation_sequences.csv", index_col=0)
-            isna = (mut_df["effect_prediction_epistatic"].isna()) | (mut_df["effect_prediction_independent"].isna())
-            if len(mut_df[~isna]) == 0:
-                continue
-            u = torch.arange(30).view(1,1,-1)
-            X = (L*u).mean(-1)
-        except:
-            continue
-
-        for exp in exp_columns:
-            try:
-                isnaexp = (mut_df[exp].isna()) | isna
-                y = mut_df[~isnaexp][exp].values
-                high_bound, low_bound = np.quantile(y, 0.8), np.quantile(y, 0.2)
-
-                # Dot build
-                V_ = V[~isnaexp]
-                V_ = V_[:, torch.where(V_.std(0) != 0)[0]]
-
-                m, s = V_[mut_df[~isnaexp][exp] >= high_bound].mean(0)[None], \
-                       V_[mut_df[~isnaexp][exp] >= high_bound].std(0)[None]
-                dot_high = (V_ - m) / s
-                m, s = V_[mut_df[~isnaexp][exp] <= low_bound].mean(0)[None], \
-                       V_[mut_df[~isnaexp][exp] <= low_bound].std(0)[None]
-                dot_low = (V_ - m) / s
-
-                dot = torch.cat([dot_low, dot_high], 1)
-                dot = dot[:, torch.where((dot.sum(0) == dot.sum(0)) & (dot.std(0) != 0))[0]]
-                dot_ind = torch.cat([dot, torch.tensor(mut_df[~isnaexp]["effect_prediction_independent"].values)[:, None]], 1)
-                dot_epi = torch.cat([dot, torch.tensor(mut_df[~isnaexp]["effect_prediction_epistatic"].values)[:, None]], 1)
-
-                dot = torch.cat([dot] + [torch.tensor(rankdata(d, method='ordinal')).view(-1, 1) for d in dot.t()], 1)
-                dot_ind = torch.cat([dot_ind] + [torch.tensor(rankdata(d, method='ordinal')).view(-1, 1) for d in dot_ind.t()],1)
-                dot_epi = torch.cat([dot_epi] + [torch.tensor(rankdata(d, method='ordinal')).view(-1, 1) for d in dot_epi.t()], 1)
-
-                dot = (dot - dot.mean(0)[None]) / dot.std(0)[None]
-                dot_ind = (dot_ind - dot_ind.mean(0)[None]) / dot_ind.std(0)[None]
-                dot_epi = (dot_epi - dot_epi.mean(0)[None]) / dot_epi.std(0)[None]
-
-                rho_dot = cv_spearmanr(dot, y)
-                rho_dot_ind = cv_spearmanr(dot_ind, y)
-                rho_dot_epi = cv_spearmanr(dot_epi, y)
-
-                # Matching Expect build
-                X_ = X[~isnaexp]
-                m,s  = X_[mut_df[~isnaexp][exp] >= high_bound].mean(0)[None], X_[mut_df[~isnaexp][exp] >= high_bound].std(0)[None]
-                X_high = (X_-m)/s
-                m,s = X_[mut_df[~isnaexp][exp] <= low_bound].mean(0)[None], X_[mut_df[~isnaexp][exp] <= low_bound].std(0)[None]
-                X_low = (X_-m)/s
-                matching_expect = torch.cat([X_low, X_high], 1)
-                matching_expect_ind = torch.cat([matching_expect, torch.tensor(mut_df[~isnaexp]["effect_prediction_independent"].values)[:,None]], 1)
-                matching_expect_epi = torch.cat([matching_expect, torch.tensor(mut_df[~isnaexp]["effect_prediction_epistatic"].values)[:,None]], 1)
-
-                matching_expect = torch.cat([matching_expect] + [torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_expect.t()], 1)
-                matching_expect_ind = torch.cat([matching_expect_ind] + [torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_expect_ind.t()], 1)
-                matching_expect_epi = torch.cat([matching_expect_epi] + [torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_expect_epi.t()], 1)
-
-                matching_expect = (matching_expect - matching_expect.mean(0)[None])/matching_expect.std(0)[None]
-                matching_expect_ind = (matching_expect_ind - matching_expect_ind.mean(0)[None])/matching_expect_ind.std(0)[None]
-                matching_expect_epi = (matching_expect_epi - matching_expect_epi.mean(0)[None])/matching_expect_epi.std(0)[None]
-
-                rho_matching_expect = cv_spearmanr(matching_expect, y)
-                rho_matching_expect_ind = cv_spearmanr(matching_expect_ind, y)
-                rho_matching_expect_epi = cv_spearmanr(matching_expect_epi, y)
-
-                # Matching Divergence build
-                L_0 = L[~isnaexp][mut_df[~isnaexp][exp] >= high_bound].mean(0)
-                div_high = (L_0 * (torch.log(L_0 + 1e-8) - torch.log(L[~isnaexp]+ 1e-8))).sum(-1)
-                L_0 = L[~isnaexp][mut_df[~isnaexp][exp] <= low_bound].mean(0)
-                div_low = (L_0 * (torch.log(L_0 + 1e-8) - torch.log(L[~isnaexp]+ 1e-8))).sum(-1)
-
-                matching_div = torch.cat([div_low, div_high], 1)
-                matching_div_ind = torch.cat([matching_div, torch.tensor(mut_df[~isnaexp]["effect_prediction_independent"].values)[:,None]], 1)
-                matching_div_epi = torch.cat([matching_div, torch.tensor(mut_df[~isnaexp]["effect_prediction_epistatic"].values)[:,None]], 1)
-
-                matching_div = torch.cat([matching_div] + [torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_div.t()], 1)
-                matching_div_ind = torch.cat([matching_div_ind] + [torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_div_ind.t()], 1)
-                matching_div_epi = torch.cat([matching_div_epi] + [torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_div_epi.t()], 1)
-
-                matching_div = (matching_div - matching_div.mean(0)[None])/matching_div.std(0)[None]
-                matching_div_ind = (matching_div_ind - matching_div_ind.mean(0)[None])/matching_div_ind.std(0)[None]
-                matching_div_epi = (matching_div_epi - matching_div_epi.mean(0)[None])/matching_div_epi.std(0)[None]
-
-                rho_matching_div = cv_spearmanr(matching_div, y)
-                rho_matching_div_ind = cv_spearmanr(matching_div_ind, y)
-                rho_matching_div_epi = cv_spearmanr(matching_div_epi, y)
-
-                # Combine
-                if rho_matching_div_epi > rho_matching_expect_epi:
-                    rho_matching = rho_matching_div
-                    rho_matching_ind = rho_matching_div_ind
-                    rho_matching_epi = rho_matching_div_epi
-                    combine_epi = torch.cat([matching_div, dot_epi], 1)
-                    rho_interpolate_epi, t = interpolate(matching_div_epi, dot_epi, y)
-                else:
-                    rho_matching = rho_matching_expect
-                    rho_matching_ind = rho_matching_expect_ind
-                    rho_matching_epi = rho_matching_expect_epi
-                    combine_epi = torch.cat([matching_expect, dot_epi], 1)
-                    rho_interpolate_epi, t = interpolate(matching_expect_epi, dot_epi, y)
-                rho_combine_epi = cv_spearmanr(combine_epi, y)
-
-                rho_independent = spearmanr(y, mut_df[~isnaexp]["effect_prediction_independent"].values)[0]
-                rho_epistatic = spearmanr(y, mut_df[~isnaexp]["effect_prediction_epistatic"].values)[0]
-                entry = [family, name_dataset, exp, in_pdb, len(y), len(ss_hmm[0]), rho_independent, rho_epistatic,
-                         rho_dot, rho_dot_ind, rho_dot_epi,
-                         rho_matching, rho_matching_ind, rho_matching_epi,
-                         rho_interpolate_epi, t, rho_combine_epi]
-
-                print("")
-                print(f"Size : {len(y)}")
-                print(f"Length : {len(ss_hmm[0])}")
-                print(f"Independent | Rho = {rho_independent:.3f}")
-                print(f"Epistatic | Rho = {rho_epistatic:.3f}")
-                print(f"Dot | Rho = {rho_dot:.3f}")
-                print(f"Dot + Independent | Rho = {rho_dot_ind:.3f}")
-                print(f"Dot + Epistatic | Rho = {rho_dot_epi:.3f}")
-                print(f"Matching | Rho = {rho_matching:.3f}")
-                print(f"Matching + Independent | Rho = {rho_matching_ind:.3f}")
-                print(f"Matching + Epistatic | Rho = {rho_matching_epi:.3f}")
-                print(f"Interpolation | Rho = {rho_interpolate_epi:.3f}, t = {t}")
-                print(f"Combination Epistatic | Rho = {rho_combine_epi:.3f}")
-
-                rho_df = pd.read_csv(f"{PATH}/rho_df_randomforest.csv", index_col = 0)
-                rho_df.loc[f"{name_dataset}_{exp}"] = entry
-                rho_df.to_csv(f"{PATH}/rho_df_randomforest.csv")
-                print("")
-            except:
-                continue
-        print("---------------------------")
-
-def build_metrics2():
-    meta_df = pd.read_excel(f"{PATH}/meta.xlsx", index_col=0)
-
-    for metadata in meta_df.itertuples():
-        try:
-            family = metadata.family
-            name_dataset = metadata.dataset
-            uniprotid = metadata.uniprot
-            in_pdb = metadata.in_PDB
-            exp_columns = re.findall(r"\w\w*", metadata.exp_columns)
-
-            print(f"Family : {family}")
-            print(f"Dataset : {name_dataset}")
-            print(f"Uniprot ID : {uniprotid}")
-            print(f"Experimental Columns : {exp_columns}")
-            print()
             directory = os.listdir(f"{PATH}/{family}")
             if f"{family}.fasta" not in directory or f"{family}_{name_dataset}.csv" not in directory:
                 print("Missing files")
-            if "aligned.hhm" not in directory or "patterns.pkl" not in directory:
+            if "data.pt" not in directory:
                 build_family(family, uniprotid)
-            if f"{name_dataset}_hmm.pkl" not in directory:
+            if f"{name_dataset}_data.pt" not in directory:
                 run_dataset(PATH, family, name_dataset)
+            dataset = SSQAData_QA(f"{PATH}/{family}/data.pt")
+            pattern = dataset.c_pattern3, dataset.n_pattern3, dataset.c_pattern8, dataset.n_pattern8
+            dataset = SSQAData_QA(f"{PATH}/{family}/{name_dataset}_data.pt")
+            model_ss = NetSurfP2(50, "nsp2")
+            model_ss = model_ss.to("cuda")
+            model_ss.load_state_dict(torch.load(f"{UTILS}/nsp_50feats.h5"))
 
-            dataset = SecondaryStructureRawDataset(f"{PATH}/{family}/hmm.pkl")
-            model_ss3 = NetSurfP2(50, "nsp2")
-            model_ss3 = model_ss3.to("cuda")
-            model_ss3.load_state_dict(torch.load(f"{DATA}/secondary_structure/lstm_50feats.h5"))
-            x_0 = torch.tensor(dataset[0][0])[None].permute(0, 2, 1).float().cuda()
-            ss_hmm = model_ss3(x_0)[2][0].detach().cpu()
-            seq_hmm = torch.tensor(dataset[0][0]).t()[20:]
+            seq_hmm = dataset.seq_hmm
             size = seq_hmm.size(-1)
 
-            n_pattern, c_pattern, m_pat, M_pat = pickle.load(open(f"{PATH}/{family}/patterns.pkl", "rb"))
-            Q = np.ones((3, size + 1, size + 1)) * (-np.inf)
-            for i in range(size + 1):
-                Q[:3, i, i + 1:] = 0
-            Q = Q.reshape(1, *Q.shape)
-            regex = ([(i, None, None) for i in n_pattern])
+            SS_HMM3 = torch.ones(3, size) / 3
+            SS_HMM8 = torch.ones(8, size) / 8
+            ss_hmm = torch.tensor(dataset[0]).float()
+            active_idx = torch.where((ss_hmm[:20].sum(0) > 0))[0]
+            pred = model_ss(ss_hmm[None, :, active_idx].cuda())
+            SS_HMM3[:, active_idx] = F.softmax(pred[2][0], 0).cpu()
+            SS_HMM8[:, active_idx] = F.softmax(pred[1][0], 0).cpu()
+            SS_HMM3 = SS_HMM3[None]
+            SS_HMM8 = SS_HMM8[None]
+            X = torch.cat([data[None] for data in dataset], 0)
+            ssqa = SSQAMut(model_ss, pattern, seq_hmm, SS_HMM3, SS_HMM8)
 
-
-            dataset = SecondaryStructureRawDataset(f"{PATH}/{family}/{name_dataset}_hmm.pkl")
-            loader = DataLoader(dataset, batch_size=16,
-                                shuffle=False, drop_last=False, collate_fn=collate_sequences)
-
-
-            matcher1 = PatternMatching(model_ss3, pattern = regex, Q=Q,
-                                      seq_hmm=seq_hmm, ss_hmm=None,
-                                      size=size, name= c_pattern)
-            matcher2 = PatternWithoutMatching(model_ss3, pattern=regex, Q=Q,
-                                             seq_hmm=seq_hmm, ss_hmm=ss_hmm,
-                                             size=size, name=c_pattern)
-
-            m = Matching(x_0)
-            matcher1(m)
-            L_0 = m.L
-
-            ls, L, V = [], [], []
-            for batch_idx, data in tqdm(enumerate(loader)):
-                x = data[0].permute(0, 2, 1).float()
-                m = Matching(x)
-                matcher1(m)
-                v = matcher2(m)
-                L.append(m.L), ls.append(m.ls), V.append(v)
-                del m
-                torch.cuda.empty_cache()
-            ls, V, L = torch.cat(ls, 0), torch.cat(V, 0), torch.cat(L, 0)
-            L = L.clamp(1e-8,1)
-            mut_df = pd.read_csv(f"{PATH}/{family}/{name_dataset}_mutation_sequences.csv", index_col=0)
+            dp, pm = ssqa.featuring(X)
+            mut_df = pd.read_csv(f"{MUT_DATA}/{family}/{name_dataset}_mutation_sequences.csv", index_col=0)
             isna = (mut_df["effect_prediction_epistatic"].isna()) | (mut_df["effect_prediction_independent"].isna())
-            if len(mut_df[~isna]) == 0:
-                continue
-            u = torch.arange(30).view(1,1,-1)
-            X = (L*u).mean(-1)
-            X_0 = (L_0*u).mean(-1)
-
         except:
             continue
-
         for exp in exp_columns:
             try:
                 isnaexp = (mut_df[exp].isna()) | isna
                 y = mut_df[~isnaexp][exp].values
-
-                # Dot build
-                V_ = V[~isnaexp]
-                dot = V_
-                dot = dot[:, torch.where((dot.sum(0) == dot.sum(0)) & (dot.std(0) != 0))[0]]
-                dot_ind = torch.cat([dot, torch.tensor(mut_df[~isnaexp]["effect_prediction_independent"].values)[:, None]], 1)
-                dot_epi = torch.cat([dot, torch.tensor(mut_df[~isnaexp]["effect_prediction_epistatic"].values)[:, None]], 1)
-
-                dot = torch.cat([torch.tensor(rankdata(d, method='ordinal')).view(-1, 1) for d in dot.t()], 1).max(1)[0].float()
-                dot_ind = torch.cat([torch.tensor(rankdata(d, method='ordinal')).view(-1, 1) for d in dot_ind.t()],1).max(1)[0].float()
-                dot_epi = torch.cat([torch.tensor(rankdata(d, method='ordinal')).view(-1, 1) for d in dot_epi.t()], 1).max(1)[0].float()
-
-                dot = (dot - dot.mean(0)[None]) / dot.std(0)[None]
-                dot_ind = (dot_ind - dot_ind.mean(0)[None]) / dot_ind.std(0)[None]
-                dot_epi = (dot_epi - dot_epi.mean(0)[None]) / dot_epi.std(0)[None]
-
-                rho_dot = spearmanr(y, dot)[0]
-                rho_dot_ind = spearmanr(y, dot_ind)[0]
-                rho_dot_epi = spearmanr(y, dot_epi)[0]
-
-                # Matching Expect build
-                X_ = X[~isnaexp]
-                matching_expect = (X_ - X_0)/X_0
-                matching_expect_ind = torch.cat([matching_expect, torch.tensor(mut_df[~isnaexp]["effect_prediction_independent"].values)[:,None]], 1)
-                matching_expect_epi = torch.cat([matching_expect, torch.tensor(mut_df[~isnaexp]["effect_prediction_epistatic"].values)[:,None]], 1)
-
-                matching_expect = torch.cat([torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_expect.t()], 1).max(1)[0].float()
-                matching_expect_ind = torch.cat([torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_expect_ind.t()], 1).max(1)[0].float()
-                matching_expect_epi = torch.cat([torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_expect_epi.t()], 1).max(1)[0].float()
-
-                matching_expect = (matching_expect - matching_expect.mean(0)[None])/matching_expect.std(0)[None]
-                matching_expect_ind = (matching_expect_ind - matching_expect_ind.mean(0)[None])/matching_expect_ind.std(0)[None]
-                matching_expect_epi = (matching_expect_epi - matching_expect_epi.mean(0)[None])/matching_expect_epi.std(0)[None]
-
-                rho_matching_expect = spearmanr(y,matching_expect)[0]
-                rho_matching_expect_ind = spearmanr(y,matching_expect_ind)[0]
-                rho_matching_expect_epi = spearmanr(y,matching_expect_epi)[0]
-
-                # Matching Divergence build
-                L_0_ = L[~isnaexp].mean(0)
-                div_high = (L_0_ * (torch.log(L_0 + 1e-8) - torch.log(L[~isnaexp]+ 1e-8))).sum(-1)
-
-                matching_div = div_high
-                matching_div_ind = torch.cat([matching_div, torch.tensor(mut_df[~isnaexp]["effect_prediction_independent"].values)[:,None]], 1)
-                matching_div_epi = torch.cat([matching_div, torch.tensor(mut_df[~isnaexp]["effect_prediction_epistatic"].values)[:,None]], 1)
-
-                matching_div = torch.cat([torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_div.t()], 1).max(1)[0].float()
-                matching_div_ind = torch.cat([torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_div_ind.t()], 1).max(1)[0].float()
-                matching_div_epi = torch.cat([torch.tensor(rankdata(d, method='ordinal')).view(-1,1) for d in matching_div_epi.t()], 1).max(1)[0].float()
-
-                matching_div = (matching_div - matching_div.mean(0)[None])/matching_div.std(0)[None]
-                matching_div_ind = (matching_div_ind - matching_div_ind.mean(0)[None])/matching_div_ind.std(0)[None]
-                matching_div_epi = (matching_div_epi - matching_div_epi.mean(0)[None])/matching_div_epi.std(0)[None]
-
-                rho_matching_div = spearmanr(y,matching_div)[0]
-                rho_matching_div_ind = spearmanr(y,matching_div_ind)[0]
-                rho_matching_div_epi = spearmanr(y,matching_div_epi)[0]
-
-                # Combine
-                if rho_matching_div_epi > rho_matching_expect_epi:
-                    rho_matching = rho_matching_div
-                    rho_matching_ind = rho_matching_div_ind
-                    rho_matching_epi = rho_matching_div_epi
-                    combine_epi = torch.cat([matching_div[:,None], dot_epi[:,None]], 1).max(1)[0]
-                else:
-                    rho_matching = rho_matching_expect
-                    rho_matching_ind = rho_matching_expect_ind
-                    rho_matching_epi = rho_matching_expect_epi
-                    combine_epi = torch.cat([matching_expect[:,None], dot_epi[:,None]], 1).max(1)[0]
-                rho_combine_epi = spearmanr(y, combine_epi)[0]
-
-                rho_independent = spearmanr(y, mut_df[~isnaexp]["effect_prediction_independent"].values)[0]
-                rho_epistatic = spearmanr(y, mut_df[~isnaexp]["effect_prediction_epistatic"].values)[0]
-                entry = [family, name_dataset, exp, in_pdb, len(y), len(ss_hmm[0]), rho_independent, rho_epistatic,
-                         rho_dot, rho_dot_ind, rho_dot_epi,
-                         rho_matching, rho_matching_ind, rho_matching_epi,
-                         None, None, rho_combine_epi]
+                edca = torch.tensor(mut_df["effect_prediction_epistatic"][~isnaexp]).float()
+                eind = torch.tensor(mut_df["effect_prediction_independent"][~isnaexp]).float()
+                rho_scores_ind = cv_spearmanr(ssqa, eind, dp, pm, y)
+                rho_scores_dca = cv_spearmanr(ssqa, edca, dp, pm, y)
 
                 print("")
                 print(f"Size : {len(y)}")
-                print(f"Length : {len(ss_hmm[0])}")
-                print(f"Independent | Rho = {rho_independent:.3f}")
-                print(f"Epistatic | Rho = {rho_epistatic:.3f}")
-                print(f"Dot | Rho = {rho_dot:.3f}")
-                print(f"Dot + Independent | Rho = {rho_dot_ind:.3f}")
-                print(f"Dot + Epistatic | Rho = {rho_dot_epi:.3f}")
-                print(f"Matching | Rho = {rho_matching:.3f}")
-                print(f"Matching + Independent | Rho = {rho_matching_ind:.3f}")
-                print(f"Matching + Epistatic | Rho = {rho_matching_epi:.3f}")
-                print(f"Combination Epistatic | Rho = {rho_combine_epi:.3f}")
+                print(f"Length : {size}")
+                for k, v in rho_scores_dca.items():
+                    print(f"{k} : {v:.3f}")
+                entry = [family, name_dataset, exp, uniprotid, in_pdb, size, len(y)]
+                entry += list(rho_scores_ind.values())
+                entry += list(rho_scores_dca.values())
 
-                rho_df = pd.read_csv(f"{PATH}/rho_df_unsupervised.csv", index_col = 0)
+                rho_df = pd.read_csv(f"{PATH}/rho_df.csv", index_col=0)
                 rho_df.loc[f"{name_dataset}_{exp}"] = entry
-                rho_df.to_csv(f"{PATH}/rho_df_unsupervised.csv")
+                rho_df.to_csv(f"{PATH}/rho_df.csv")
                 print("")
             except:
                 continue
-        print("---------------------------")
+    print("---------------------------")
 
 
 build_metrics()

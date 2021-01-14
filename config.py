@@ -1,4 +1,8 @@
-DATASET = "PF07736"
-DATA = "/home/malbranke/data"
-MUTDATA = "/home/malbranke/mut_data"
-ROOT = "/home/malbranke/protein_models"
+ROOT = "/home/malbranke"
+DATA = f"{ROOT}/data"
+
+MUT_DATA = f"{DATA}/mut"
+PFAM_DATA = f"{DATA}/pfam"
+WEIGHTS = f"{DATA}/weights"
+UTILS = f"{DATA}/utils"
+CROSS = f"{DATA}/cross"

@@ -157,7 +157,7 @@ class MRF(nn.Module):
         mean_loss, mean_reg, mean_acc = 0, 0, 0
         edges = [self.get_edge(v, "hidden") for v in visible_layers]
         for batch_idx, data in enumerate(loader):
-            d_0 = {k: v.float().permute(0, 2, 1).to(device) for k, v in zip(LAYERS_NAME, data[:-2]) if k in visible_layers}
+            d_0 = {k: v.float().permute(0, 2, 1).to(device) for k, v in zip(LAYERS_NAME, data[:-1]) if k in visible_layers}
             w = data[-1].float().to(device)
             batch_size, q, N = d_0["sequence"].size()
 

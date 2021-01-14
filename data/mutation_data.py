@@ -5,12 +5,11 @@ import pandas as pd
 import subprocess
 
 from utils import *
-from pattern import search_pattern, infer_pattern
+from ssqa import search_pattern, infer_pattern
 from .hmm_data import build_profiles
-from .sequence_extraction import from_df_to_fasta, from_fasta_to_df
+from .sequence_extraction import from_df_to_fasta, from_df_to_data, from_fasta_to_df
 
 # Family
-
 
 
 def replace(seq, mutations):
@@ -27,13 +26,14 @@ def replace(seq, mutations):
 def run_family(path, family, uniprot):
     from_fasta_to_df(f"{path}/{family}", f"{path}/{family}/{family}.fasta", chunksize=5000)
     from_df_to_fasta(f"{path}/{family}", f"{path}/{family}/sequences.csv")
+    from_df_to_data(f"{path}/{family}", f"{path}/{family}/sequences.csv")
 
     print("make HMM profile")
     subprocess.run(f'hhmake -i {path}/{family}/aligned.fasta -M 100', shell=True)
 
     nat_df = pd.read_csv(f"{path}/{family}/sequences.csv")
     seq_nat = nat_df.loc[0].seq
-    build_profiles(f"{path}/{family}", idxs = [0])
+    build_profiles(f"{path}/{family}")
     pattern, ratio_covered = search_pattern(f"{path}/{family}", uniprot, seq_nat)
     if pattern is None:
         pattern, ratio_covered = infer_pattern(f"{path}/{family}", [0])
@@ -75,6 +75,8 @@ def run_dataset(path, family, name_dataset):
 
     mut_df.to_csv(f"{path}/{family}/{name_dataset}_mutation_sequences.csv")
     from_df_to_fasta(f"{path}/{family}", f"{path}/{family}/{name_dataset}_mutation_sequences.csv",
+                     prefix=f"{name_dataset}_")
+    from_df_to_data(f"{path}/{family}", f"{path}/{family}/{name_dataset}_mutation_sequences.csv",
                      prefix=f"{name_dataset}_")
     build_profiles(f"{path}/{family}", prefix=f"{name_dataset}_")
 

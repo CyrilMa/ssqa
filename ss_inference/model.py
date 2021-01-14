@@ -94,18 +94,14 @@ class BaseNet(nn.Module):
             n_res += N
             m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
             if verbose > 1:
-                print(f'''Train Epoch: {epoch} [{int(100 * batch_idx / len(loader))}%] || Time: {m} min {s} ||\
-                 SS3 Acc: {mean_ss3_acc:.3f} || SS8 Acc : {mean_ss8_acc:.3f} || Loss: {mean_loss:.3f} || \
-                 SS3 Loss: {mean_ss3:.3f} || SS8 Loss: {mean_ss8:.3f} || Other Loss: {mean_other:.3f}'''
+                print(f'''Train Epoch: {epoch} [{int(100 * batch_idx / len(loader))}%] || Time: {m} min {s} || SS3 Acc: {mean_ss3_acc:.3f} || SS8 Acc : {mean_ss8_acc:.3f} || Loss: {mean_loss:.3f} || SS3 Loss: {mean_ss3:.3f} || SS8 Loss: {mean_ss8:.3f} || Other Loss: {mean_other:.3f}'''
                     , end="\r")
         m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
         logs = {"train/ss3_acc": mean_ss3_acc, "train/ss8_acc" : mean_ss8_acc, "train/loss": mean_loss,
                 "train/ss3_loss": mean_ss3, "train/ss8_loss": mean_ss8, "train/other": mean_other}
         self.write_tensorboard(logs, epoch)
         if verbose > 0:
-            print(f'''Train Epoch: {epoch} [100%] || Time: {m} min {s}  || SS3 Acc: {mean_ss3_acc:.3f} || SS8 Acc \
-            : {mean_ss8_acc:.3f} || Loss: {mean_loss:.3f} || SS3 Loss: {mean_ss3:.3f} || SS8 Loss: {mean_ss8:.3f} \
-            || Other Loss: {mean_other:.3f}''')
+            print(f'''Train Epoch: {epoch} [100%] || Time: {m} min {s}  || SS3 Acc: {mean_ss3_acc:.3f} || SS8 Acc : {mean_ss8_acc:.3f} || Loss: {mean_loss:.3f} || SS3 Loss: {mean_ss3:.3f} || SS8 Loss: {mean_ss8:.3f} || Other Loss: {mean_other:.3f}''')
         return mean_ss3_acc, mean_ss8_acc, mean_loss, mean_ss3, mean_ss8
 
     def val_epoch(self, loader, epoch = 0, verbose = 2):
@@ -153,8 +149,7 @@ class BaseNet(nn.Module):
         m, s = int(time.time() - start) // 60, int(time.time() - start) % 60
         if verbose > 0:
             print(
-                f'''Val Epoch: {epoch} [100%] || Time: {m} min {s} || SS3 Acc: {mean_ss3_acc:.3f} || \
-                SS8 Acc: {mean_ss8_acc:.3f}''')
+                f'''Val Epoch: {epoch} [100%] || Time: {m} min {s} || SS3 Acc: {mean_ss3_acc:.3f} || SS8 Acc: {mean_ss8_acc:.3f}''')
         return mean_ss3_acc, mean_ss8_acc
 
     def predict(self, loader):
@@ -168,7 +163,7 @@ class BaseNet(nn.Module):
 
         self.eval()
         ss3, ss8, others = [], [],[]
-        for batch_idx, (x,t, is_empty) in tqdm(enumerate(loader)):
+        for batch_idx, (x,_, is_empty) in tqdm(enumerate(loader)):
             x = x.float().permute(0, 2, 1).to(self.device)[:, :50]
             is_empty = is_empty.float().permute(0, 2, 1).to(self.device)
 

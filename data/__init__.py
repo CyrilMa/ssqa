@@ -2,6 +2,7 @@ from .patterns_extraction import *
 from .hmm_data import *
 from .sequence_extraction import *
 from .data_structure import *
+
 import subprocess
 
 def pfam_data(folder, filename):

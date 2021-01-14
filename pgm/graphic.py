@@ -11,6 +11,6 @@ def draw_G(G):
                             pos=pos,
                             font_size=10,
                             font_color="white",
-                            label=list(G.nodes()))
+                            labels=G.nodes())
     nx.draw_networkx_edges(G, pos)
     plt.show()

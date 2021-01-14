@@ -6,7 +6,7 @@ from torch import optim
 
 from config import *
 
-from pgm.data import SequenceData
+from data import RBMSequenceData
 from pgm.layers import OneHotLayer, GaussianLayer
 from pgm.model import MRF
 
@@ -17,13 +17,13 @@ q = 21
 k = 10
 lamb_l1b = 0.025
 Nh = 200
-DATASET = "PF00017"
+DATASET = "PF07736/russ"
 
-train_dataset = SequenceData(f"{DATA}/{DATASET}", dataset="train")
+train_dataset = RBMSequenceData(f"{DATA}/{DATASET}", dataset="full")
 train_loader = DataLoader(train_dataset, batch_size=batch_size,
                           shuffle=True, drop_last=True)
 
-val_dataset = SequenceData(f"{DATA}/{DATASET}", dataset="val")
+val_dataset = RBMSequenceData(f"{DATA}/{DATASET}", dataset="full")
 val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
 _, N, qx = train_dataset.raw_sequences.shape
@@ -57,7 +57,7 @@ for visible in visible_layers:
 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-for epoch in range(4000):
+for epoch in range(40000):
     model.train_epoch(optimizer, train_loader, visible_layers, hidden_layers, [gamma], epoch,
           savepath=f"{DATA}/{DATASET}/weights/seq-reg-200")
     if not epoch % 30:
