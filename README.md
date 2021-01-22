@@ -1,5 +1,7 @@
 ## Improving sequence-based modeling of protein families using secondary structure quality assessment
 
+![Duck](ressources/graphabstract.png)
+
 **Motivation** 
 Modeling of protein family sequence distribution from homologous sequence data recently received considerable 
 attention, in particular for structure and function predictions, as well as for protein design.  In particular,
@@ -38,7 +40,30 @@ All data are available to download in this [Google Drive folder](https://drive.g
 - [`utils`](https://drive.google.com/file/d/1MwRV5_ofAlV9ePD3JwCDlfheHzHrxVBY/view?usp=sharing) for training and validation set use for secondary structure inference, including own 
   trained weights for NetSurfP2 
   
+After downloading is done, extract it and set the path to different data in `config.py`
+  
 Please, should these links expires, don't hesitate to reach out for us.
+
+### Building Data
+
+Take a look at the tutorial in `notebook/Tutorial.ipynb`, we detail step by step how to build data. 
+You can use the script we provide in `build_data.py`. This will build the data file `data.pt` used for
+next uses
+
+### Secondary Structure inference
+
+You can see how to train and validate a secondary structure predictor in `traib_ssinf.py`. Some weights 
+are provided in `utils`.
+
+### Pattern Matching and Dot Product
+
+Best examples are available in `notebook/Chorismate Mutases - Russ et al. 2020.ipynb` and 
+`notebook/Beta-lactamase Ecoli.ipynb`, detail step by step.
+
+### Sampling with RBM and SSQA
+
+You can refer to `notebook/RBM With SSQA.ipynb` for detailled walktrough on sampling. 
+Some pretrained weights for RBM are provided in `pfam/.../weights`.
 
 ### Contact
 

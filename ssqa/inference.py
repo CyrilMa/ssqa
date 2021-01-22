@@ -62,7 +62,7 @@ class PatternMatchingInference(nn.Module):
     def max_alpha(self, m, T):
         batch_size, P, ls = m.batch_size, m.P, m.ls
         alpha, norm = [], []
-        a_ = -torch.ones(batch_size, 4, self.size + 1) * inf
+        a_ = -torch.ones(batch_size, self.ssn + 1, self.size + 1) * inf
         a_[:, :, 0] = self.pi
         n_ = a_.logsumexp((-1, -2), keepdim=True)
         a_ -= n_
@@ -111,12 +111,12 @@ class PatternMatchingInference(nn.Module):
 
     def P_(self, m):
         batch_size, C, ls = m.batch_size, torch.log(m.ss), m.ls
-        P = torch.zeros(batch_size, m.ssn+1, self.size + 1, self.size + 1)
+        P = torch.zeros(batch_size, self.ssn+1, self.size + 1, self.size + 1)
         for i in range(self.size + 1):
-            P[:, :m.ssn, i, :i + 1] = -inf
+            P[:, :self.ssn, i, :i + 1] = -inf
             if i == self.size:
                 break
-            P[:, :3, :i + 1, i + 1:] += C[:, :, i].view(batch_size, m.ssn, 1, 1)
+            P[:, :self.ssn, :i + 1, i + 1:] += C[:, :, i].view(batch_size, self.ssn, 1, 1)
         P[:, -1] = -inf
         P[:, -1, ls, ls] = 0
         return P[:, None, :, :, :]

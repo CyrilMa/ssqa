@@ -23,7 +23,7 @@ def get_structures(pfam_id):
 
     structfam = set()
     for x in fam.itertuples():
-        structfam.add((x.PDB_ID, x.CHAIN_ID, x.PdbResNumStart, x.PdbResNumEnd))
+        structfam.add((x.PDB_ID, x.CHAIN_ID, int(x.PdbResNumStart), int(x.PdbResNumEnd)))
     return structfam
 
 def build_patterns(structfam, folder):

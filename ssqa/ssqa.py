@@ -134,7 +134,7 @@ class SSQA(nn.Module):
         pm = torch.cat([pm3, pm8], 1).clamp(1e-8, 1)
         if reference_idx is not None:
             self.pm0 = (pm[reference_idx] * u).sum(-1).mean(0)[None]
-        pm = -((pm * u).sum(-1) - self.pm0)
+        pm = ((pm * u).sum(-1) - self.pm0)
         dp = torch.cat([dp3, dp8], 1)
         return dp, pm
 
@@ -157,7 +157,7 @@ class SSQA(nn.Module):
             print("Not trained")
             return None
         _, pm = self.normalize(dp, pm)
-        dpunsup, pmunsup = (dp ** 0.5).sum(1) / (dp > 0).sum(1), pm.mean(1)
+        dpunsup, pmunsup = (dp ** 0.5).sum(1) / (dp > 0).sum(1), (1-pm).mean(1)
         dpsup, pmsup = None, None
         if self.trained_supervised:
             dp, _ = self.normalize(dp, pm)

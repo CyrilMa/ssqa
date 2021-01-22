@@ -69,7 +69,7 @@ def from_df_to_fasta(folder, file, chunksize=5000, prefix = ""):
 def build_protein_df(folder, filename, chunksize=5000):
     file = f"{folder}/{filename}"
     print("building sequences.csv")
-    #from_fasta_to_df(folder, file, chunksize=chunksize)
+    from_fasta_to_df(folder, file, chunksize=chunksize)
     print("building data.pt")
     from_df_to_data(folder, f"{folder}/sequences.csv")
     print("building aligned.fasta, unaligned.fasta ...")

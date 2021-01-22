@@ -21,7 +21,10 @@
   <component name="ChangeListManager">
     <list default="true" id="0181bba7-5666-4018-9f1a-3336ee67b6fd" name="Default Changelist" comment="Oct 19th">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/Beta-lactamase Ecoli .ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/Beta-lactamase Ecoli .ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/Chorismate Mutase - Russ et al. 2020.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/Chorismate Mutase - Russ et al. 2020.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ssqa/inference.py" beforeDir="false" afterPath="$PROJECT_DIR$/ssqa/inference.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ssqa/ssqa.py" beforeDir="false" afterPath="$PROJECT_DIR$/ssqa/ssqa.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -201,7 +204,8 @@
       <workItem from="1610971364228" duration="8677000" />
       <workItem from="1611050671402" duration="2659000" />
       <workItem from="1611136589634" duration="1324000" />
-      <workItem from="1611164387115" duration="1073000" />
+      <workItem from="1611164387115" duration="3984000" />
+      <workItem from="1611223589442" duration="624000" />
     </task>
     <task id="LOCAL-00001" summary="Oct 19th">
       <created>1603114844961</created>
