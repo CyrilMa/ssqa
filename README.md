@@ -57,12 +57,12 @@ are provided in [`utils.zip`](https://idata.phys.ens.fr/index.php/s/BPfffRccZMBo
 
 ### Pattern Matching and Dot Product
 
-Best examples are available in [`notebooks/Chorismate Mutases - Russ et al. 2020.ipynb`](notebooks/ChorismateMutases_Russ2020.ipynb) and 
-[`notebooks/Beta-lactamase Ecoli.ipynb`](notebooks/BetalactamaseEcoli.ipynb), detail step by step.
+Best examples are available in [`notebooks/ChorismateMutases_Russ2020.ipynb`](notebooks/ChorismateMutases_Russ2020.ipynb) and 
+[`notebooks/BetalactamaseEcoli.ipynb`](notebooks/BetalactamaseEcoli.ipynb), detail step by step.
 
 ### Sampling with RBM and SSQA
 
-You can refer to [`notebooks/RBM With SSQA.ipynb`](notebooks/RBMSampling_With_SSQA.ipynb) for detailled walktrough on sampling. 
+You can refer to [`notebooks/RBMSampling_With_SSQA.ipynb`](notebooks/RBMSampling_With_SSQA.ipynb) for detailled walktrough on sampling. 
 Some pretrained weights for RBM are provided in `pfam/.../weights`.
 
 ### Contact
