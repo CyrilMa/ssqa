@@ -36,7 +36,7 @@ def run_family(path, family, uniprot):
     build_profiles(f"{path}/{family}")
     pattern, ratio_covered = search_pattern(f"{path}/{family}", uniprot, seq_nat)
     if pattern is None:
-        pattern, ratio_covered = infer_pattern(f"{path}/{family}", [0])
+        pattern, ratio_covered = infer_pattern(f"{path}/{family}")
     return pattern, ratio_covered
 
 # Dataset

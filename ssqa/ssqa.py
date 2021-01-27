@@ -168,18 +168,63 @@ class SSQAMut(SSQA):
 
     def __init__(self, model_ss, pattern=None, seq_hmm=None, ss_hmm3=None, ss_hmm8=None, name=""):
         super(SSQAMut, self).__init__(model_ss, pattern, seq_hmm, ss_hmm3, ss_hmm8, name)
-        self.dpclf = RandomForestRegressor()
-        self.pmclf = RandomForestRegressor()
+        self.dpclf = RandomForestRegressor(200, n_jobs = 48)
+        self.pmclf = RandomForestRegressor(200, n_jobs = 48)
+
+    def featuring(self, X):
+        dp3 = []
+        pm3 = []
+        dp8 = []
+        pm8 = []
+        batch_size = 32
+        N = len(X)
+        for batch_idx in range(N // batch_size + 1):
+            x = X[batch_idx * batch_size: (batch_idx + 1) * batch_size].float()
+            m3, m8 = self(x)
+            dp3.append(m3.dp.detach())
+            dp8.append(m8.dp.detach())
+            pm3.append(m3.L.detach())
+            pm8.append(m8.L.detach())
+            torch.cuda.empty_cache()
+        dp3 = torch.cat(dp3, 0)
+        dp8 = torch.cat(dp8, 0)
+        pm3 = torch.cat(pm3, 0)
+        pm8 = torch.cat(pm8, 0)
+
+        u = torch.arange(30)[None, None]
+        pm = torch.cat([pm3, pm8], 1).clamp(1e-8, 1)
+        pm = (pm * u).sum(-1)
+        dp = torch.cat([dp3, dp8], 1)
+        return dp, pm
+
+    def train(self, dp, pm, y=None, ref=[0]):
+        self.pm0 = pm[ref].mean(0)
+        pm = pm - self.pm0
+
+        self.dpmin = dp.min(0)[0][None]
+        self.dpmax = dp.max(0)[0][None]
+        self.pmmin = pm.min(0)[0][None]
+        self.pmmax = pm.max(0)[0][None]
+
+        dp, pm = self.normalize(dp, pm)
+        self.trained_unsupervised = True
+
+        if y is not None:
+            self.dpclf = self.dpclf.fit(dp, y)
+            self.pmclf = self.pmclf.fit(pm, y)
+            self.trained_supervised = True
 
     def predict(self, dp, pm):
+        pm = pm - self.pm0
+
         if not self.trained_unsupervised:
             print("Not trained")
             return None
         _, pm = self.normalize(dp, pm)
-        dpunsup, pmunsup = (dp ** 0.5).sum(1) / (dp > 0).sum(1), pm.mean(1)
+        dpunsup, pmunsup = (dp ** 0.5).sum(1) / (dp > 0).sum(1), (1-pm).mean(1)
         dpsup, pmsup = None, None
         if self.trained_supervised:
             dp, _ = self.normalize(dp, pm)
-            dpsup, pmsup = torch.tensor(self.dpclf.predict(dp)), torch.tensor(self.pmclf.predict(pm))
+            dpsup, pmsup = self.dpclf.predict(dp), self.pmclf.predict(pm)
         return dpunsup, pmunsup, dpsup, pmsup
 

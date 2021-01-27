@@ -72,7 +72,7 @@ def build_patterns(structfam, folder):
 
     correspondings8 = dict()
     correspondings3 = dict()
-    for c8, n8, c3, n3, w in zip(c_patterns8, n_patterns8, c_patterns3, n_patterns3, weights):
+    for c8, n8, c3, n3 in zip(c_patterns8, n_patterns8, c_patterns3, n_patterns3):
         if c3[0] != "c":
             c3 = "c"+c3
             n3 = [2]+n3
@@ -85,15 +85,14 @@ def build_patterns(structfam, folder):
         if c8[-1] != "C":
             c8 = c8+"C"
             n8 = n8+[7]
-
         if c8 not in occ_sum8.keys():
             occ_sum8[c8] = 0
             correspondings8[c8] = c8, n8
-        occ_sum8[c8] += w
+        occ_sum8[c8] += 1
         if c3 not in occ_sum3.keys():
             occ_sum3[c3] = 0
             correspondings3[c3] = c3, n3
-        occ_sum3[c3] += w
+        occ_sum3[c3] += 1
 
     c_pattern8, n_pattern8 = correspondings8[max(occ_sum8, key=occ_sum8.get)]
     c_pattern3, n_pattern3 = correspondings3[max(occ_sum3, key=occ_sum3.get)]

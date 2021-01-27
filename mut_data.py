@@ -6,6 +6,8 @@ from data.mutation_data import run_family, run_dataset
 
 from ss_inference import NetSurfP2
 
+import torch
+
 from ssqa import *
 
 from scipy.stats import spearmanr, rankdata
@@ -16,6 +18,8 @@ from config import *
 warnings.filterwarnings("ignore")
 PATH = "/home/malbranke/data/mut"
 
+torch.set_num_threads(48)
+
 
 def build_family(fam, uniprotid):
     print(f"Starting with family {fam} (Uniprot ID : {uniprotid})")
@@ -25,20 +29,12 @@ def build_family(fam, uniprotid):
 
 
 def best_temperature(X, y):
-    e, dpunsup, pmunsup, dpsup, pmsup = X
-    clf = LinearRegression(fit_intercept=False)
-    clf.fit(torch.cat([e[:, None], dpunsup[:, None], pmunsup[:, None]], 1), y)
-    a, b, c = clf.coef_[0], clf.coef_[1], clf.coef_[2]
-    if a < 0:
-        Wunsup = 0, -b / a, -c / a
-    else:
-        Wunsup = 1, b / a, c / a
-    clf.fit(torch.cat([e[:, None], dpsup[:, None], pmsup[:, None]], 1), y)
-    a, b, c = clf.coef_[0], clf.coef_[1], clf.coef_[2]
-    if a < 0:
-        Wsup = 0, -b / a, -c / a
-    else:
-        Wsup = 1, b / a, c / a
+    e, dpunsup, dpsup, pmunsup_low, pmsup_low, pmunsup_high, pmsup_high = X
+    clf = LinearRegression()
+    clf.fit(torch.cat([e[:, None], dpunsup[:, None], pmunsup_low[:, None], pmunsup_high[:, None]], 1), y)
+    Wunsup = clf.coef_[0], clf.coef_[1], clf.coef_[2], clf.coef_[3]
+    clf.fit(torch.cat([e[:, None], dpsup[:, None], pmsup_low[:, None], pmsup_high[:, None]], 1), y)
+    Wsup = clf.coef_[0], clf.coef_[1], clf.coef_[2], clf.coef_[3]
     return Wunsup, Wsup
 
 
@@ -47,14 +43,27 @@ def cv_spearmanr(ssqa, edca, dp, pm, y, N=5):
     rho_scores = {"E": 0, "sup/DP": 0, "sup/PM": 0, "sup/PM+DP": 0, "sup/E+DP": 0, "sup/E+PM": 0, "sup/E+DP+PM": 0,
                   "unsup/DP": 0, "unsup/PM": 0, "unsup/PM+DP": 0, "unsup/E+DP": 0, "unsup/E+PM": 0, "unsup/E+DP+PM": 0}
     for i, (train_index, test_index) in enumerate(cv.split(edca)):
-        ssqa.train(dp[train_index], pm[train_index], y[train_index])
+        low, high = np.quantile(y[train_index], [0.1])[0], np.quantile(y[train_index], [0.9])[0]
+        low_index = np.where(y[train_index] <= low)[0]
+        high_index = np.where(y[train_index] >= high)[0]
+
+        ssqa.train(dp[train_index], pm[train_index], y[train_index], low_index)
+        _, pmunsup_low, _, pmsup_low = ssqa.predict(dp[test_index], pm[test_index])
+
+        ssqa.train(dp[train_index], pm[train_index], y[train_index], high_index)
+        dpunsup, pmunsup_high, dpsup, pmsup_high = ssqa.predict(dp[test_index], pm[test_index])
+
         e = torch.tensor(edca[test_index])
-        dpunsup, pmunsup, dpsup, pmsup = ssqa.predict(dp[test_index], pm[test_index])
+        dpunsup, dpsup, pmunsup_low, pmsup_low, pmunsup_high, pmsup_high = \
+            torch.tensor(dpunsup),torch.tensor(dpsup),torch.tensor(pmunsup_low),torch.tensor(pmsup_low),torch.tensor(pmunsup_high),torch.tensor(pmsup_high)
         y_test = y[test_index]
-        (wu_e, wu_dp, wu_pm), (ws_e, ws_dp, ws_pm) = best_temperature(
-            [e, dpunsup, pmunsup, dpsup, pmsup], y_test)
+        (wu_e, wu_dp, wu_pm, wu_pm2), (ws_e, ws_dp, ws_pm, ws_pm2) = best_temperature(
+            [e, dpunsup, dpsup, pmunsup_low, pmsup_low, pmunsup_high, pmsup_high], y_test)
 
         rho_scores["E"] += np.abs(spearmanr(y_test, e)[0]) / N
+
+        pmsup = pmsup_low + ws_pm2/ws_pm * pmsup_high
+        pmunsup = pmunsup_low + wu_pm2/wu_pm * pmunsup_high
 
         rho_scores["sup/DP"] += np.abs(spearmanr(y_test, dpsup)[0]) / N
         rho_scores["sup/PM"] += np.abs(spearmanr(y_test, pmsup)[0]) / N
@@ -84,7 +93,7 @@ def build_metrics():
                                    "dca/unsup/DP", "dca/unsup/PM", "dca/unsup/PM+DP", "dca/unsup/E+DP",
                                    "dca/unsup/E+PM", "dca/unsup/E+DP+PM"
                                    ])
-    rho_df.to_csv(f"{PATH}/rho_df.csv")
+   # rho_df.to_csv(f"{PATH}/rho_df.csv")
     for metadata in meta_df.itertuples():
         family = metadata.family
         name_dataset = metadata.dataset
@@ -132,29 +141,26 @@ def build_metrics():
         except:
             continue
         for exp in exp_columns:
-            try:
-                isnaexp = (mut_df[exp].isna()) | isna
-                y = mut_df[~isnaexp][exp].values
-                edca = torch.tensor(mut_df["effect_prediction_epistatic"][~isnaexp]).float()
-                eind = torch.tensor(mut_df["effect_prediction_independent"][~isnaexp]).float()
-                rho_scores_ind = cv_spearmanr(ssqa, eind, dp, pm, y)
-                rho_scores_dca = cv_spearmanr(ssqa, edca, dp, pm, y)
+            isnaexp = (mut_df[exp].isna()) | isna
+            y = mut_df[~isnaexp][exp].values
+            edca = torch.tensor(mut_df["effect_prediction_epistatic"][~isnaexp]).float()
+            eind = torch.tensor(mut_df["effect_prediction_independent"][~isnaexp]).float()
+            rho_scores_ind = cv_spearmanr(ssqa, eind, dp, pm, y)
+            rho_scores_dca = cv_spearmanr(ssqa, edca, dp, pm, y)
 
-                print("")
-                print(f"Size : {len(y)}")
-                print(f"Length : {size}")
-                for k, v in rho_scores_dca.items():
-                    print(f"{k} : {v:.3f}")
-                entry = [family, name_dataset, exp, uniprotid, in_pdb, size, len(y)]
-                entry += list(rho_scores_ind.values())
-                entry += list(rho_scores_dca.values())
+            print("")
+            print(f"Size : {len(y)}")
+            print(f"Length : {size}")
+            for k, v in rho_scores_dca.items():
+                print(f"{k} : {v:.3f}")
+            entry = [family, name_dataset, exp, uniprotid, in_pdb, size, len(y)]
+            entry += list(rho_scores_ind.values())
+            entry += list(rho_scores_dca.values())
 
-                rho_df = pd.read_csv(f"{PATH}/rho_df.csv", index_col=0)
-                rho_df.loc[f"{name_dataset}_{exp}"] = entry
-                rho_df.to_csv(f"{PATH}/rho_df.csv")
-                print("")
-            except:
-                continue
+            rho_df = pd.read_csv(f"{PATH}/rho_df.csv", index_col=0)
+            rho_df.loc[f"{name_dataset}_{exp}"] = entry
+            rho_df.to_csv(f"{PATH}/rho_df.csv")
+            print("")
     print("---------------------------")
 
 

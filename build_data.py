@@ -23,24 +23,25 @@ if "1" in STEPS:
     pfam_data(f"{DATA}/{DATASET}", "full.fasta")
 
 if "2" in STEPS:
-    structfam = get_structures(DATA, DATASET)
-    pfam_seqs = pd.read_csv(f"{DATA}/{DATASET}/sequences.csv", index_col = 0, usecols = [0,2]).seq
-    pfam_seqs = {k.split("/")[0]:v for k,v in pfam_seqs.items()}
-    patterns, secondary_structure, c_patterns, n_patterns = build_patterns(pfam_seqs, structfam)
+    structfam = get_structures(DATASET)
+    build_patterns(structfam, f"{DATA}/{DATASET}")
 
-dataset = SecondaryStructureRawDataset(f"{DATA}/{DATASET}/hmm.pkl")
-
+dataset = SSQAData_SSinf(f"{DATA}/{DATASET}/data.pt")
+loader = DataLoader(dataset, batch_size = 1,
+                          shuffle = False, drop_last=False, collate_fn = collate_sequences)
 if "3" in STEPS:
-    print("Secondary structure")
-    loader = DataLoader(dataset, batch_size = 1,
-                            shuffle=False, drop_last=False, collate_fn = collate_sequences)
+    q = 50
+    model_ss = NetSurfP2(50, "nsp")
+    model_ss = model_ss.to(device)
+    model_ss.load_state_dict(torch.load(f"{UTILS}/nsp_50feats.h5"))
 
-    device = "cuda"
-
-    model_ss3 = NetSurfP2(50)
-    model_ss3 = model_ss3.to(device)
-    model_ss3.load_state_dict(torch.load(f"{DATA}/secondary_structure/lstm_50feats.h5"))
-    print(model_ss3)
+    ss3 = torch.zeros(len(dataset), 3, 500)
+    for batch_idx, data in enumerate(loader):
+        x = torch.tensor(data[0]).float().cuda()
+        ss3_ = F.softmax(model_ss(x)[2], 1).detach().cpu()
+        ss3[1 * batch_idx:1 * (batch_idx + 1), :, :ss_.size(-1)] = ss_
+        if batch_idx == 1000:
+            break
 
     others, ss8, ss3 = model_ss3.predict(loader)
     pickle.dump(ss3, open(f"{DATA}/{DATASET}/ss3.pkl", "wb"))

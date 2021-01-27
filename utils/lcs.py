@@ -25,7 +25,7 @@ def lcs(X, Y):
     posX.sort(), posY.sort()
     return len(posX), (min(posX), max(posX), min(posY), max(posY)), L
 
-INDEL, MISS = 10, 10
+INDEL, MISS = 3, 3
 
 def lcs_pattern(X, Y):
     m, n = len(X), len(Y)

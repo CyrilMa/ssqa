@@ -143,10 +143,11 @@ def search_pattern(path, uniprot, seq_nat):
             sse = mmtf_file["secStructList"]
             sse = np.array(sse[m_mut: M_mut + 1])
             length = len(sse)
+            if max(sse) == -1:
+                continue
             if length < longest:
                 continue
             if length > longest:
-                print(length)
                 longest = length
                 patterns = []
             sse = np.array([pdb_codes[code%8] for code in sse], dtype="U1")
@@ -169,7 +170,7 @@ def search_pattern(path, uniprot, seq_nat):
     if ratio_covered <= 0.9:
         push(f"{path}/data.pt", "pattern", (None,None,None,None))
         return None, ratio_covered
-    c_patterns3, n_patterns3, c_patterns8, n_patterns8 = [], [], [], [],
+    c_patterns3, n_patterns3, c_patterns8, n_patterns8 = [], [], [], []
     for pat3, pat8 in patterns:
         if len(pat3) == 0:
             continue
@@ -194,7 +195,6 @@ def search_pattern(path, uniprot, seq_nat):
             max_occ = n_occ
             c_pattern3, n_pattern3 = c3, n3
             c_pattern8, n_pattern8 = c8, n8
-
     push(f"{path}/data.pt", "pattern", (c_pattern3, n_pattern3, c_pattern8, n_pattern8))
 
     return (c_pattern3, n_pattern3, c_pattern8, n_pattern8), ratio_covered
@@ -207,12 +207,9 @@ def infer_pattern(path, indices=None):
         path (str): path to load and save data
         indices (list): reference sequences in fasta file
     """
-
+    if indices is None:
+        indices = list(range(128))
     dataset = SSQAData_QA(f"{path}/data.pt")
-    if indices is not None:
-        dataset.seqs = [x for i, x in enumerate(dataset.seqs) if i in indices]
-    loader = DataLoader(dataset, batch_size=16,
-                        shuffle=False, drop_last=False, collate_fn=collate_sequences)
 
     Q3 = torch.load(f"{UTILS}/Q3.pt").float()
     pi3 = torch.load(f"{UTILS}/pi3.pt")[:, 0].float()
@@ -224,7 +221,7 @@ def infer_pattern(path, indices=None):
 
     model_ss = NetSurfP2(50, "nsp2")
     model_ss = model_ss.to("cuda")
-    model_ss.load_state_dict(torch.load(f"{UTILS}/lstm_50feats.h5"))
+    model_ss.load_state_dict(torch.load(f"{UTILS}/nsp_50feats.h5"))
 
     inferer3 = PatternMatchingInference(model_ss, Q=Q3, pi=pi3,
                                         seq_hmm=seq_hmm, size=size)
@@ -234,8 +231,12 @@ def infer_pattern(path, indices=None):
     print("Inference Model build")
     c_patterns3, n_patterns3 = dict(), dict()
     c_patterns8, n_patterns8 = dict(), dict()
-    for batch_idx, data in enumerate(loader):
-        x = torch.tensor(data[0]).permute(0, 2, 1).float()
+    X = torch.cat([data[None] for data in dataset], 0)
+    X = X[indices]
+    batch_size = 16
+    N = len(X)
+    for batch_idx in range(N // batch_size + 1):
+        x = X[batch_idx * batch_size: (batch_idx + 1) * batch_size].float()
         m = Matching(x)
         p3 = inferer3(m, 3)
         p8 = inferer8(m, 3)
@@ -264,7 +265,7 @@ def infer_pattern(path, indices=None):
 
     print(f"Pattern Infered : ss3 = {c_pattern3}, ss8 = {c_pattern8} ")
     push(f"{path}/data.pt", "pattern", (c_pattern3, n_pattern3, c_pattern8, n_pattern8))
-    return n_pattern3, c_pattern3, n_pattern8, c_pattern8
+    return (n_pattern3, c_pattern3, n_pattern8, c_pattern8), 1.
 
 
 def build_piQT3():
