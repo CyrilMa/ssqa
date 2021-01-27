@@ -46,23 +46,23 @@ Please, should these links expires, don't hesitate to reach out for us.
 
 ### Building Data
 
-Take a look at the tutorial in `notebooks/Tutorials.ipynb`, we detail step by step how to build data. 
-You can use the script we provide in `build_data.py`. This will build the data file `data.pt` used for
+Take a look at the tutorial in [`notebooks/Tutorial.ipynb`](notebooks/Tutorial.ipynb), we detail step by step how to build data. 
+You can use the script we provide in [`build_data.py`](build_data.py). This will build the data file `data.pt` used for
 next uses
 
 ### Secondary Structure inference
 
-You can see how to train and validate a secondary structure predictor in `train_ssinf.py`. Some weights 
+You can see how to train and validate a secondary structure predictor in [`train_ssinf.py`](train_ssinf.py). Some weights 
 are provided in [`utils.zip`](https://idata.phys.ens.fr/index.php/s/BPfffRccZMBoTXZ).
 
 ### Pattern Matching and Dot Product
 
-Best examples are available in `notebooks/Chorismate Mutases - Russ et al. 2020.ipynb` and 
-`notebook/Beta-lactamase Ecoli.ipynb`, detail step by step.
+Best examples are available in [`notebooks/Chorismate Mutases - Russ et al. 2020.ipynb`](notebooks/Chorismate Mutases - Russ et al. 2020.ipynb) and 
+[`notebooks/Beta-lactamase Ecoli.ipynb`](notebooks/Beta-lactamase Ecoli.ipynb), detail step by step.
 
 ### Sampling with RBM and SSQA
 
-You can refer to `notebook/RBM With SSQA.ipynb` for detailled walktrough on sampling. 
+You can refer to [`notebooks/RBM With SSQA.ipynb`](notebooks/RBM Sampling With SSQA.ipynb) for detailled walktrough on sampling. 
 Some pretrained weights for RBM are provided in `pfam/.../weights`.
 
 ### Contact
