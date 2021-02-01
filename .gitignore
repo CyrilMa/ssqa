@@ -5,4 +5,3 @@
 *.pkl
 *__pycache__*
 nohup.out
-*idea*
