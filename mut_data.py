@@ -105,8 +105,8 @@ def build_metrics():
         print(f"Uniprot ID : {uniprotid}")
         print(f"Experimental Columns : {exp_columns}")
         print()
+        directory = os.listdir(f"{PATH}/{family}")
         try:
-            directory = os.listdir(f"{PATH}/{family}")
             if f"{family}.fasta" not in directory or f"{family}_{name_dataset}.csv" not in directory:
                 print("Missing files")
             if "data.pt" not in directory:

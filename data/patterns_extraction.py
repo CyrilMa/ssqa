@@ -73,6 +73,8 @@ def build_patterns(structfam, folder):
     correspondings8 = dict()
     correspondings3 = dict()
     for c8, n8, c3, n3 in zip(c_patterns8, n_patterns8, c_patterns3, n_patterns3):
+        if len(c3) == 0:
+            continue
         if c3[0] != "c":
             c3 = "c"+c3
             n3 = [2]+n3

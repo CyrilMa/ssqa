@@ -233,9 +233,10 @@ def infer_pattern(path, indices=None):
     c_patterns8, n_patterns8 = dict(), dict()
     X = torch.cat([data[None] for data in dataset], 0)
     X = X[indices]
+    print(X.shape)
     batch_size = 16
     N = len(X)
-    for batch_idx in range(N // batch_size + 1):
+    for batch_idx in range((N-1) // batch_size + 1):
         x = X[batch_idx * batch_size: (batch_idx + 1) * batch_size].float()
         m = Matching(x)
         p3 = inferer3(m, 3)

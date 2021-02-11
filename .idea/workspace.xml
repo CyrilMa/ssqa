@@ -20,19 +20,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0181bba7-5666-4018-9f1a-3336ee67b6fd" name="Default Changelist" comment="Oct 19th">
-      <change afterPath="$PROJECT_DIR$/notebooks/Data_Visualize.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ressources/SSQA-preprint.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ressources/supplementary.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/build_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/BetalactamaseEcoli.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/BetalactamaseEcoli.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/Chorismate Mutases.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/ChorismateMutases_Russ2020.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/ChorismateMutases_Russ2020.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/Data Viz.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/Untitled.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/Visualisation Mutational Datasets.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/WW.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/patterns_extraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/patterns_extraction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mut_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/mut_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/Mutational_Datasets_Analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/Mutational_Datasets_Analysis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/Tutorial.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/Tutorial.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pgm/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/pgm/model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ssqa/inference.py" beforeDir="false" afterPath="$PROJECT_DIR$/ssqa/inference.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_rbm.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_rbm.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -222,7 +217,11 @@
       <workItem from="1611828683086" duration="47000" />
       <workItem from="1611828742352" duration="2765000" />
       <workItem from="1611926239522" duration="1020000" />
-      <workItem from="1612187881944" duration="66000" />
+      <workItem from="1612187881944" duration="665000" />
+      <workItem from="1612787544646" duration="2000" />
+      <workItem from="1612872550796" duration="1780000" />
+      <workItem from="1612963012467" duration="663000" />
+      <workItem from="1613081956116" duration="2394000" />
     </task>
     <task id="LOCAL-00001" summary="Oct 19th">
       <created>1603114844961</created>
